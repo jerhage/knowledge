@@ -7,6 +7,10 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: 'Knowledge',
+			components: {
+				PageTitle: './src/components/PageTitle.astro',
+			},
+			routeMiddleware: './src/routeData.ts',
 			head: [
 				{
 					tag: 'meta',

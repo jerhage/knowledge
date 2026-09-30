@@ -1,0 +1,9 @@
+---
+import Default from '@astrojs/starlight/components/PageTitle.astro';
+import TagList from './TagList.astro';
+
+const tags: string[] = Astro.locals.starlightRoute.entry.data.tags ?? [];
+---
+
+<Default />
+{tags.length > 0 && <TagList tags={tags} />}

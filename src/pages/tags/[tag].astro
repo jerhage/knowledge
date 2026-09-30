@@ -1,0 +1,39 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+
+export async function getStaticPaths() {
+	const docs = await getCollection('docs');
+	const byTag = new Map<string, CollectionEntry<'docs'>[]>();
+	for (const doc of docs) {
+		for (const tag of doc.data.tags) byTag.set(tag, [...(byTag.get(tag) ?? []), doc]);
+	}
+	return [...byTag].map(([tag, pages]) => ({
+		params: { tag },
+		props: { pages: pages.sort((a, b) => a.data.title.localeCompare(b.data.title)) },
+	}));
+}
+
+const { tag } = Astro.params;
+const { pages } = Astro.props;
+---
+
+<StarlightPage
+	frontmatter={{
+		title: `Tag: ${tag}`,
+		description: `${pages.length} ${pages.length === 1 ? 'page' : 'pages'} tagged “${tag}”.`,
+		pagefind: false,
+	}}
+>
+	<ul>
+		{
+			pages.map((page) => (
+				<li>
+					<a href={`/${page.id}/`}>{page.data.title}</a>
+					{page.data.description && <> — {page.data.description}</>}
+				</li>
+			))
+		}
+	</ul>
+	<p><a href="/tags/">All tags</a></p>
+</StarlightPage>
