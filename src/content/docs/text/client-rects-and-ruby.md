@@ -8,7 +8,7 @@ sidebar:
 
 ## Ruby is why
 
-My reader marks captured passages in an ebook chapter. A passage gets a highlight, and the passage you arrived at also gets an outline, a border drawn around it. foliate-js, the library that renders the chapter, draws both through its overlayer (an SVG layer over the text), from the rectangles the passage's range reports.
+Dokseo, my manga and book reader, marks captured passages in an ebook chapter. A passage gets a highlight, and the passage you arrived at also gets an outline, a border drawn around it. foliate-js, the library that renders the chapter, draws both through its overlayer (an SVG layer over the text), from the rectangles the passage's range reports.
 
 Drawing that border looked simple, and it wasn't. Drawing one box per rectangle gave me *three* stacked boxes around a single column of Japanese text. Other things ranges report are in [selections and ranges](/text/selection-and-ranges/).
 

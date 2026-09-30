@@ -8,7 +8,7 @@ sidebar:
 
 ## Caching is not durability
 
-My reader keeps books and downloaded models in the browser's own storage. That storage isn't guaranteed to stay. Every browser store (Cache API, IndexedDB, OPFS) is evictable, meaning the browser can delete that data on its own. Eviction skips an origin (a scheme, host and port) that holds a persistence grant.
+Dokseo, my manga and book reader, keeps books and downloaded models in the browser's own storage. That storage isn't guaranteed to stay. Every browser store (Cache API, IndexedDB, OPFS) is evictable, meaning the browser can delete that data on its own. Eviction skips an origin (a scheme, host and port) that holds a persistence grant.
 
 ```ts
 await navigator.storage.persist();    // request
@@ -24,7 +24,7 @@ await navigator.storage.estimate();   // usage and quota
 
 ## `navigator.storage.estimate()` reports an origin, and nothing reports IndexedDB
 
-The reader's settings screen shows how much space the app is using. The obvious source for that is `navigator.storage.estimate()`, which returns a `usage` and a quota. `usage` counts every store the origin has: Cache API, OPFS, IndexedDB, service worker registrations, plus padding the browser adds on purpose so nobody can use the number to probe for cross-origin state. (The quota next to it is the most the browser will let the origin store.) There's no standard way to ask how much space one IndexedDB database takes. Chromium has a non-standard `usageDetails`, but it splits by backend, not by content, and no other browser has it. So I can always show an origin total, and never a per-database figure. The screen should show that gap, so someone reading it doesn't have to guess what the total covers.
+Dokseo's settings screen shows how much space the app is using. The obvious source for that is `navigator.storage.estimate()`, which returns a `usage` and a quota. `usage` counts every store the origin has: Cache API, OPFS, IndexedDB, service worker registrations, plus padding the browser adds on purpose so nobody can use the number to probe for cross-origin state. (The quota next to it is the most the origin can store.) There's no standard way to query how much space one IndexedDB database takes. Chromium has a non-standard `usageDetails`, but it splits by backend, not by content, and no other browser has it. So I can always show an origin total, and never a per-database figure. The screen should show that gap, so someone reading it doesn't have to guess what the total covers.
 
 ## A cached response's `content-length` is the wire size, not the disk size
 

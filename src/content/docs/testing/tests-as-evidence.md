@@ -6,7 +6,7 @@ sidebar:
   order: 5
 ---
 
-A test suite is only worth something if a green run means the app works. Each rule on this page protects that meaning. Most of them come from riftcards, a React Native app of mine, where each one was learned by a test that passed while telling me nothing. The riftcards side, with its real suites and fixtures, is on [how riftcards is checked](/projects/riftcards/engineering/checks-and-tests/).
+A test suite is only worth something if a green run means the app works. Each of my testing rules protects that meaning. Most of them come from Rifty, a React Native card app of mine for the Riftbound card game, where each one was learned by a test that passed and proved nothing. The Rifty side, with its real suites and fixtures, is on [how Rifty is checked](/projects/rifty/engineering/checks-and-tests/).
 
 ## Never weaken an assertion to pass
 
@@ -16,7 +16,7 @@ That throws away what the failure just showed me. A failing assertion means one 
 
 What I never do is keep the test and make it assert nothing. A vacuous test still counts in the suite total and still reads as coverage to the next person who opens the file. They see a test named for a behavior and believe the behavior is checked. That's worse than no test at all, because no test at least looks like a gap.
 
-In riftcards this happened when I reverted a lettered band that marked a card's domain (a game term: cards belong to domains such as Body or Calm). An assertion said the catalog grid identifies a domain without relying on color, and after the revert that was false on purpose. I deleted the assertion and wrote the decision down next to the accessibility finding it came from.
+In Rifty this happened when I reverted a lettered band that marked a card's domain (a game term: cards belong to domains such as Body or Calm). An assertion checked that the catalog grid identifies a domain without relying on color, and after the revert that was false on purpose. I deleted the assertion and wrote the decision down next to the accessibility finding it came from.
 
 ## A guard counts once you have seen it fail
 
@@ -28,13 +28,13 @@ So before I trust a regression test, I run it against the code I'm replacing and
 
 Sometimes I keep code that nothing calls yet: a component I plan to try again, or an operation waiting for the screen that will use it. I mark it with a comment that says it's kept and what would make it live (see [kept code says why it is kept](/practices/recording-decisions/#kept-code-says-why-it-is-kept-and-what-would-make-it-live)).
 
-Code like that has no callers by definition, so nothing in the app exercises it. If a refactor breaks it, no screen fails and no other test notices. It rots quietly, and the day someone finally reaches for it, it doesn't work. A test is the only thing that keeps running it, so kept code gets one. In riftcards an unused alternative to the domain bar, `DomainBand`, still has four assertions for exactly this reason.
+Code like that has no callers by definition, so nothing in the app exercises it. If a refactor breaks it, no screen fails and no other test fails. It rots without anyone noticing, and the day someone finally reaches for it, it doesn't work. A test is the only thing that keeps running it, so kept code gets one. In Rifty an unused alternative to the domain bar, `DomainBand`, still has four assertions for exactly this reason.
 
 A test isn't a caller, though. When I find code whose only callers are tests and that has no keep-marker, the tests-only use is evidence it's dead, and I delete it along with its tests.
 
 ## A scenario runs on real critical infrastructure
 
-Most tests check one piece in isolation. A scenario test checks a workflow a person actually goes through, like adding a card to the catalog, writing a note on it and then removing the card. In riftcards these files are named `*.scenario.test.ts`, so they're easy to find.
+Most tests check one piece in isolation. A scenario test checks a workflow a person actually goes through, like adding a card to the catalog, writing a note on it and then removing the card. In Rifty these files are named `*.scenario.test.ts`, so they're easy to find.
 
 A scenario only means something if the parts that determine whether the workflow works are real. For an app that stores data in a database, that's the database itself. So a scenario runs on:
 

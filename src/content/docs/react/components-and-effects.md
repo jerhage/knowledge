@@ -6,7 +6,7 @@ sidebar:
   order: 1
 ---
 
-These are rules I kept coming back to while building a React Native app, [riftcards](/projects/riftcards/presentation/react-conventions/). Nothing in them depends on React Native, so they hold on the web too. The Svelte version of the effect problem is on [Svelte effects](/svelte/effects/).
+These are rules I kept coming back to while building a React Native app, [Rifty](/projects/rifty/presentation/react-conventions/). Nothing in them depends on React Native, so they hold on the web too. The Svelte version of the effect problem is on [Svelte effects](/svelte/effects/).
 
 ## A piece of the tree is a component or an inline element, never a variable
 
@@ -27,7 +27,7 @@ I choose between them by size and by reach, never by convenience.
 
 A variable holding JSX is neither. It holds an element, not a component, so it can't call hooks of its own and it can't be wrapped in `memo`. React renders it exactly as if the element were written inline, so the variable buys nothing. And someone reading the `return` has to trace each variable back up to learn what the element depends on.
 
-Passing an element as a prop is fine: `primary={<CatalogGrid … />}` writes the element where it's used. The intermediate variable is what to avoid. The riftcards case is [no JSX in a variable](/projects/riftcards/presentation/react-conventions/#no-jsx-in-a-variable).
+Passing an element as a prop is fine: `primary={<CatalogGrid … />}` writes the element where it's used. The intermediate variable is what to avoid. The Rifty case is [no JSX in a variable](/projects/rifty/presentation/react-conventions/#no-jsx-in-a-variable).
 
 ## An effect never keeps two pieces of state in step
 
@@ -37,7 +37,7 @@ One way is an effect that watches the section and resets the filters when it cha
 
 Someone reading the code can find every call to `resetFor`, but an effect keyed on the section is invisible from the place that changed the section. The effect also runs one render late: React first renders with the old filters, commits, then runs the effect, whose state update causes a second render. React's own guide, [you might not need an effect](https://react.dev/learn/you-might-not-need-an-effect), describes the same double render for adjusting state when a prop changes.
 
-Effects are for events from outside React: a subscription, a timer or an animation, a debounce, work that starts when the app mounts. The riftcards version, with the app's four effects, is [state changes through callbacks, not effects](/projects/riftcards/presentation/react-conventions/#state-changes-through-callbacks-not-effects). Svelte's `$effect` has the same trap in a different form; see [Svelte effects](/svelte/effects/).
+Effects are for events from outside React: a subscription, a timer or an animation, a debounce, work that starts when the app mounts. The Rifty version, with the app's four effects, is [state changes through callbacks, not effects](/projects/rifty/presentation/react-conventions/#state-changes-through-callbacks-not-effects). Svelte's `$effect` has the same problem in a different form; see [Svelte effects](/svelte/effects/).
 
 ## A ref that mirrors state has the same problem; use the updater form
 

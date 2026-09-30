@@ -18,7 +18,7 @@ On iOS Safari, every PDF open failed with `this._requestsByChunk.getOrInsertComp
 
 Keep a list of dotted paths the modern build needs. Write a chooser that returns `'modern'` only when every path resolves to a function on `globalThis`, and `'legacy'` otherwise. Use feature detection, never the user agent string. Run it once, on the first PDF open. Then have one function return the dynamic `import()` of that build's library *together* with that build's worker URL, so the two can't drift apart (the worker side of this is in [bundling workers with Vite](/tooling/vite-workers/)). Cache that promise for as long as the page lives, and clear it if the import rejects.
 
-In my reader, the code that opens PDFs through pdf.js is an adapter (the concrete code behind a port). That adapter imports only *types* from `'pdfjs-dist'` statically. A value import would pull the modern build into the adapter's chunk for every browser (the general rule is in [keeping the bundle small](/tooling/code-splitting/)).
+In Dokseo, my manga and book reader, the code that opens PDFs through pdf.js is an adapter (the concrete code behind a port). That adapter imports only *types* from `'pdfjs-dist'` statically. A value import would pull the modern build into the adapter's chunk for every browser (the general rule is in [keeping the bundle small](/tooling/code-splitting/)).
 
 ## What goes in the list
 

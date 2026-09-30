@@ -28,27 +28,6 @@ So:
 
 So a callback that rewrites the address based on what it says *now* has to start from `new URL(location.href)`. If it started from `page.url`, each rewrite would begin again from the url you arrived at, and bring back a parameter an earlier rewrite had dropped.
 
-## A shallow `replaceState` never re-runs an effect keyed on the route param
-
-My reader mirrors the reading position into the URL: the route's id parameter names the item, and a query parameter holds the index someone is at. As they read, a `replaceState` rewrites the query. Not re-running the route on those writes is exactly what I want.
-
-The other half is easy to miss. An effect keyed on the route's id parameter doesn't re-run for a URL where only the query changes. So a link *into* the page the reader is already on, pointing at another index of the same item, moves nothing, and fails silently. Someone follows the link, the address bar shows the new index, the screen stays where it was, and no error appears.
-
-The fix is a second effect that tracks the query parameter and calls the view model to move. That effect and the mirror could feed each other: the mirror writes the query, which re-runs the effect, which moves. It can't loop, but only because the move is idempotent (doing it again with the same input changes nothing): the mirror writes the index the reader is already at, and the move returns right away when the wanted index is the current one. It can't move the *wrong* item, but only because the call passes the id the URL names, and the view model ignores a call for any other id. Both guards are needed. Drop either one, and the effect either spins or moves the item you just left.
-
-## An effect that opens an item from the URL should depend on the id alone
-
-Say a view mirrors its current position into the address bar with `replaceState`, and opens the item from an effect. That effect has to read the position parameter in `untrack`, so it depends on the route id alone:
-
-```ts
-$effect(() => {
-  const asked = untrack(() => readPosition(page.url.searchParams.get(POSITION_PARAM)));
-  void view.open(id, asked);
-});
-```
-
-`replaceState` doesn't move `page.url` ([above](#a-shallow-replacestate-leaves-pageurl-where-the-navigation-put-it)), so the write itself doesn't re-run the effect. The `untrack` still matters, though. Without it, any real navigation that changes only the query would open the item again and re-read its source. A `$derived` on `page.params.id` is safe by itself, because an unchanged string stops the update from going any further.
-
 ## A same-route `goto` starts no load, so follow it with a callback
 
 Say a route starts its loads in an `$effect` keyed on an id, and some code navigates with `goto` and relies on something happening once the new page has loaded. A `goto` that only changes the query of the page that's already open doesn't re-run that effect. So no load starts, and anything hooked onto the end of a load never runs.

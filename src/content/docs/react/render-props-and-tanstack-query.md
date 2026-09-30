@@ -6,7 +6,7 @@ sidebar:
   order: 2
 ---
 
-A [data component](/architecture/data-components/) owns one read or one write: it runs the request, draws the loading and failure states, and hands its children resolved data. That page describes the pattern without a framework. This one is the React and TanStack Query mechanics behind it. The real components, from a React Native app, are on [data components in riftcards](/projects/riftcards/presentation/data-components/).
+A [data component](/architecture/data-components/) owns one read or one write: it runs the request, draws the loading and failure states, and passes its children resolved data. That page describes the pattern without a framework. This one is the React and TanStack Query mechanics behind it. The real components, from Rifty, my React Native card app, are on [data components in Rifty](/projects/rifty/presentation/data-components/), and the Svelte counterpart over svelte-query is [data components in Svelte](/svelte/data-components/).
 
 ## A render prop is the React slot
 
@@ -83,7 +83,9 @@ type ReadState<Result> =
 
 `Result` is the use case's own union, spread in as peers, so a detail screen's data component matches `loading`, `failed`, `notFound` and `success` side by side. The match is exhaustive (ts-pattern's `.exhaustive()`), so a new variant fails the type check until it's drawn.
 
-A paged read nests a second lifecycle, `idle | loadingMore | failed`, inside its success variant, because loading more can only exist once something has loaded. A write's hook gives `idle | saving | failed | …Result`. The riftcards hooks are on [the three state hooks](/projects/riftcards/presentation/data-components/#the-three-state-hooks).
+The Svelte version in Dokseo nests the use case's result inside a `ready` variant instead, and each data component flattens it into its own union with a small pure function; see [a use case's answers are flattened beside the read](/svelte/data-components/#a-use-cases-answers-are-flattened-beside-the-read). The trade-off between the two is on [flat or nested read state](/architecture/data-components/#flat-or-nested-read-state).
+
+A paged read nests a second lifecycle, `idle | loadingMore | failed`, inside its success variant, because loading more can only exist once something has loaded. A write's hook gives `idle | saving | failed | …Result`. The Rifty hooks are on [the three state hooks](/projects/rifty/presentation/data-components/#the-three-state-hooks).
 
 ## An expected outcome resolves, because TanStack Query's retry and cache act on rejections
 
@@ -93,4 +95,4 @@ A query function's promise has two channels: it resolves or it rejects. An expec
 - A query that rejected on its first fetch holds no data in the cache, only the error.
 - `retryOnMount` defaults to `true`, so a query in that error state is fetched again whenever a component mounts it. A missing card would be looked up again every time its screen opened.
 
-A retry predicate could tell the two apart, but only by recovering a classification the union already carried. The general rule is [resolve with an answer, reject only when there is none](/architecture/expected-and-unexpected-failure/#resolve-with-an-answer-reject-only-when-there-is-none). Riftcards turns retries off entirely; that choice is on [two channels](/projects/riftcards/architecture/use-cases-and-failure/#two-channels).
+A retry predicate could distinguish the two, but only by recovering a classification the union already held. The general rule is [resolve with an answer, reject only when there is none](/architecture/expected-and-unexpected-failure/#resolve-with-an-answer-reject-only-when-there-is-none). Rifty turns retries off entirely; that choice is on [two channels](/projects/rifty/architecture/use-cases-and-failure/#two-channels).

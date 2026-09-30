@@ -6,7 +6,7 @@ sidebar:
   order: 7
 ---
 
-A port is the interface a domain declares for something it needs from outside, like storage ([ports and adapters](/architecture/ports-and-adapters/#ports-are-named-for-the-need-adapters-for-the-mechanism)). This page is about how wide a port should be. The usual answer is one repository per aggregate, holding every storage operation for it. The other answer is a set of narrow ports, one per need, that I call capabilities. Both work, and they cost different things. The examples use the [card catalog](/architecture/overview/#the-running-example). [Riftcards](/projects/riftcards/architecture/capabilities-and-composition/) is the real case of the narrow version, and [the reader](/projects/reader/architecture/wiring/) of the repository version.
+A port is the interface a domain declares for something it needs from outside, like storage ([ports and adapters](/architecture/ports-and-adapters/#ports-are-named-for-the-need-adapters-for-the-mechanism)). The question is how wide a port should be. The usual answer is one repository per aggregate, holding every storage operation for it. The other answer is a set of narrow ports, one per need, that I call capabilities. Both work, and they cost different things. The examples use the [card catalog](/architecture/overview/#the-running-example). [Rifty](/projects/rifty/architecture/capabilities-and-composition/), my Riftbound card app, is the real case of the narrow version, and [Dokseo](/projects/dokseo/architecture/wiring/), my manga and book reader, of the repository version.
 
 ## One interface per need
 
@@ -41,7 +41,7 @@ interface CardCounter {
 
 The listing use case now takes `CardLister` alone, and its fake has one method. Two needs are two capabilities, even when they return the same page type, so I don't widen a capability because a second operation happens to fit its signature. A narrow port also protects its fakes when the store grows: adding a method to the full set touches no fake of `CardLister`, where widening a type that fakes implement in full breaks every one of them, and only the type check reports it (see [widening a composition-root type](/testing/fakes-and-async/#widening-a-composition-root-type-breaks-every-hand-written-fake-and-only-the-type-check-reports-it)).
 
-The trade-off is files and names. A small, stable store split into five interfaces can feel like ceremony, and the goal isn't the largest number of interfaces. I split a port when the split makes a use case clearer or protects a boundary that matters. A single repository port is fewer names to learn and reads as "the cards store", which is why the reader keeps one per domain.
+The trade-off is files and names. A small, stable store split into five interfaces can feel like ceremony, and the goal isn't the largest number of interfaces. I split a port when the split makes a use case clearer or protects a boundary that matters. A single repository port is fewer names to learn and reads as "the cards store", which is why Dokseo keeps one repository per kind of thing it stores (books, captures, tags).
 
 ## The whole set is for the composition root and the adapter
 
@@ -57,8 +57,8 @@ The aggregate interface is not the type a use case takes. If it were, every use 
 
 What happens between the composition root and the use case is the second choice:
 
-- **The composition root exposes use cases only.** It builds each use case's deps from the capabilities and hands the UI the finished functions, so no screen ever holds a port. The compiler enforces that: there's nothing else to reach. That's the layout on [the container exposes use cases](/architecture/dependency-injection/#the-container-exposes-use-cases-never-a-port), and [the reader](/projects/reader/architecture/wiring/) uses it.
-- **The composition root provides capabilities, and the code that calls a use case builds its deps at the call site.** A screen's data loader receives `CardLister` as a prop and passes `{ cardLister }` into the use case. Less wiring in one central file, and a loader's props say exactly which capabilities it touches. The cost is that "call a use case, never a port" is a convention: nothing stops the loader calling `cardLister.getPage` directly. [Riftcards](/projects/riftcards/architecture/capabilities-and-composition/) uses this one.
+- **The composition root exposes use cases only.** It builds each use case's deps from the capabilities and passes the UI the finished functions, so no screen ever holds a port. The compiler enforces that: there's nothing else to reach. That's the layout on [the container exposes use cases](/architecture/dependency-injection/#the-container-exposes-use-cases-never-a-port), and [Dokseo](/projects/dokseo/architecture/wiring/) uses it.
+- **The composition root provides capabilities, and the code that calls a use case builds its deps at the call site.** A screen's data loader receives `CardLister` as a prop and passes `{ cardLister }` into the use case. Less wiring in one central file, and a loader's props list exactly which capabilities it touches. The cost is that "call a use case, never a port" is a convention: nothing stops the loader calling `cardLister.getPage` directly. [Rifty](/projects/rifty/architecture/capabilities-and-composition/) uses this one.
 
 ## A repository and a manager are two types even when they match
 
@@ -89,7 +89,7 @@ type FindCardResult =
   | { readonly type: 'notFound' };
 ```
 
-A caller then matches on the variants, and a new one fails to compile everywhere it isn't handled. A store that can't be read at all isn't a variant here: that's an unexpected failure, and it throws. That's the named-union style [riftcards](/projects/riftcards/architecture/use-cases-and-failure/) uses. The other style is a generic `Result<T, E>` checked through an `ok` flag, where the port itself already answers with a `Result`, the way the reader's ports do. The trade-offs between the two are on [expected and unexpected failure](/architecture/expected-and-unexpected-failure/#an-expected-failure-is-a-named-variant-of-the-return-type).
+A caller then matches on the variants, and a new one fails to compile everywhere it isn't handled. A store that broke isn't a variant here: that's an unexpected failure, and it throws. That's the named-union style [Rifty](/projects/rifty/architecture/use-cases-and-failure/) uses. Dokseo uses named unions too, and its ports add one expected outcome: a store the browser blocks, for example in a private window. Such a port returns `{ kind: 'success'; card: Card | null } | StorageUnavailable`, so absence is still `null` inside the success ([the port in ports and adapters](/architecture/ports-and-adapters/#domain-declares-what-it-needs-and-never-imports-what-provides-it)). The other style is a generic `Result<T, E>` checked through an `ok` flag. The trade-offs between the two are on [expected and unexpected failure](/architecture/expected-and-unexpected-failure/#an-expected-failure-is-a-named-variant-of-the-return-type).
 
 ## Filter, sort, page and count in the store
 
@@ -101,7 +101,7 @@ A worse version: a `limit` is applied first and the in-memory filter second. The
 
 So a query that needs a narrower set extends the criteria type and the adapter, and the store does the filtering, sorting, paging and counting. The store is also the layer that can index for the query, which application code can't.
 
-A rule this strict needs its exceptions named, or each one becomes a precedent for the next. When one is justified, write it down with its reasons, and say that it licenses nothing else. Riftcards has exactly one: searching its core rules document, which it loads whole on purpose and scans in JavaScript because highlighting needs the offset of each occurrence, and because SQLite's `LIKE` only folds case for ASCII, so counting in SQL as well would give a second answer that disagrees ([searching the core rules](/projects/riftcards/rules-and-notes/rules-search/)).
+A rule this strict needs its exceptions named, or each one becomes a precedent for the next. When one is justified, write it down with its reasons, and say that it licenses nothing else. Rifty has exactly one: searching its core rules document, which I load whole on purpose and scan in JavaScript because highlighting needs the offset of each occurrence, and because SQLite's `LIKE` only folds case for ASCII, so counting in SQL as well would give a second count that doesn't match ([searching the core rules](/projects/rifty/rules-and-notes/rules-search/)).
 
 ## The query language belongs to the owner, the dialects to the callers
 

@@ -6,7 +6,7 @@ sidebar:
   order: 1
 ---
 
-My reader displays EPUB books, and an EPUB chapter is a whole XHTML document that came from someone else's file. Before a chapter is shown, I run it through DOMPurify, a library that removes anything that could run script, like script elements and inline event handlers. DOMPurify is built to sanitize a fragment of HTML. If you hand it a whole document, especially an XHTML one like an EPUB chapter, it goes wrong in ways the documentation doesn't warn you about. I checked everything here against `dompurify` 3.4.x in Chromium. The second layer under the sanitizer, the page's CSP, is in [CSP for blob documents and workers](/security/csp-blobs-and-workers/).
+Dokseo, my manga and book reader, displays EPUB books, and an EPUB chapter is a whole XHTML document that came from someone else's file. Before a chapter is shown, I run it through DOMPurify, a library that removes anything that could run script, like script elements and inline event handlers. DOMPurify is built to sanitize a fragment of HTML. If you hand it a whole document, especially an XHTML one like an EPUB chapter, it goes wrong in ways the documentation doesn't warn you about. I checked everything here against `dompurify` 3.4.x in Chromium. The second layer under the sanitizer, the page's CSP, is in [CSP for blob documents and workers](/security/csp-blobs-and-workers/).
 
 ## Sanitize a whole document `IN_PLACE`, never as a string
 

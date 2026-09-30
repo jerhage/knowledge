@@ -6,7 +6,7 @@ sidebar:
   order: 2
 ---
 
-Most of what a codebase decided is invisible in the code. The code shows the choice that won, never the ones that lost or why they lost. This page is about the few habits that keep the why findable. They come from riftcards, my React Native app, where the conventions side is on [code conventions](/projects/riftcards/engineering/code-conventions/).
+Most of what a codebase decided is invisible in the code. The code shows the choice that won, never the ones that lost or why they lost. A few habits keep the why findable. They come from Rifty, my React Native app for the Riftbound card game, where the conventions side is on [code conventions](/projects/rifty/engineering/code-conventions/).
 
 ## The code says what; a document says why
 
@@ -14,11 +14,11 @@ Say the card catalog's add-note sheet once showed its list full screen instead o
 
 The code is the truth about what the app does. It doesn't record why, and the why is what gets argued again. So a decision that cost something to reach goes into a document in the repository: what was decided, what was rejected, and why.
 
-The alternative is a comment next to the code, and comments go stale in place. A comment says nothing about when it was written, so when the code around it changes, it keeps making its claim with the same confidence. A document entry carries a date and is tied to the commit that made the change, so it ages visibly: a reader can see how old a decision is and what the code looked like then. The real story this example is based on is in [why write any of this down](/projects/riftcards/engineering/code-conventions/#why-write-any-of-this-down).
+The alternative is a comment next to the code, and comments go stale in place. A comment says nothing about when it was written, so when the code around it changes, it keeps stating the same claim, with nothing to show that it may be out of date. A document entry has a date and is tied to the commit that made the change, so it ages visibly: a reader can see how old a decision is and what the code looked like then. The real story this example is based on is in [why write any of this down](/projects/rifty/engineering/code-conventions/#why-write-any-of-this-down).
 
 ## A departure is written beside the rule
 
-Rules have exceptions, and some of them are deliberate. In riftcards, the accessibility rules say meaning is never carried by color alone, yet card art shows a card's domain by color alone while some palette work is pending. That's a choice, not an oversight.
+Rules have exceptions, and some of them are deliberate. In Rifty, the accessibility rules say meaning is never shown by color alone, yet card art shows a card's domain by color alone while some palette work is pending. That's a deliberate choice.
 
 The next reader usually has none of the reasoning that produced it. They see a rule and code that breaks it, and an unexplained violation reads as a mistake. They then do one of two things: fix it again, undoing a decision they didn't know about, or copy it as precedent, spreading an exception that was meant to stay single. Both are worse than the departure itself.
 
@@ -26,7 +26,7 @@ So a deliberate departure from any rule gets written down where the rule is, wit
 
 ## Kept code says why it is kept and what would make it live
 
-Unused code comes in two kinds that look identical. Some is kept on purpose: an operation waiting for the screen that will call it, or an alternative component kept for a later trial. Some is dead because its caller went away. In riftcards I twice had to answer "is this waiting for a caller, or did its caller go away?" by reading git history, because the code recorded nothing. Two operations waiting for UI and one superseded lookup looked exactly alike.
+Unused code comes in two kinds that look identical. Some is kept on purpose: an operation kept for the screen that will call it, or an alternative component kept for a later trial. Some is dead because its caller went away. In Rifty I twice had to answer "is this kept for a future caller, or did its caller go away?" by reading git history, because the code recorded nothing. Two operations kept for UI not built yet and one superseded lookup looked exactly alike.
 
 So the rule is: unused code kept on purpose has a comment saying so, and unused code without one may be deleted. The comment has to say two things: that the missing caller is deliberate, and what would make the code live.
 
@@ -42,7 +42,7 @@ Kept code also needs a test, because nothing else runs it (see [kept code needs 
 
 A type can exist, be handled everywhere, and never be constructed. Say a deck's verification has three variants: legal, illegal and unverified. Every formatter handles all three. But the one function that produces a verification only ever returns legal or illegal. The unverified variant reads as working behavior, and nothing in the app can reach it.
 
-That happened in riftcards, and the variant was retired. The lesson is about where to look. Before building on something, search for the code that creates it, not the code that declares or handles it. Handlers prove only that someone expected a value to arrive.
+That happened in Rifty, and the variant was retired. The lesson is about where to look. Before building on something, search for the code that creates it, not the code that declares or handles it. Handlers prove only that someone expected a value to arrive.
 
 ## Share the real value with a test, not a copy
 
@@ -62,6 +62,6 @@ A classic adapter looks similar and is the opposite: it translates an outside li
 
 ## Revisit a decision by changing its record
 
-Written decisions can make people feel they can't disagree. That's not the point. Several of riftcards' rules exist because an earlier decision turned out to be wrong: the query factories moved out of the presentation layer that way, and the rule about dead code was written after a deletion that shouldn't have happened.
+Written decisions can make people feel they can't disagree. That's not the point. Several of Rifty's rules exist because an earlier decision turned out to be wrong: the query factories moved out of the presentation layer that way, and the rule about dead code was written after a deletion that shouldn't have happened.
 
 The point of the record is that a decision is recorded, not that it's never revisited. When I change a decision, I change its record in the same commit as the code. Then the document always matches the code, and the history of the record shows when and why the decision moved.

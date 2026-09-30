@@ -10,13 +10,13 @@ A write to browser storage can fail, so the UI has to show what actually got sav
 
 ## Keep an editor open until the storage outcome is known
 
-In my reader, a capture has a text and a note, and each has an editor. Saving an edit writes it to storage. I had an editor that closed before its write finished. When the write was refused, the draft was lost. When the write was skipped, it showed the new text anyway. In both cases, the screen and storage disagreed, and the editor was already gone. The fix: have the save return `'saved' | 'failed'`, apply the text only after the write succeeds, and close the editor only on `'saved'`.
+In Dokseo, my manga and book reader, a capture has a text and a note, and each has an editor. Saving an edit writes it to storage. I had an editor that closed before its write finished. When the write failed, the draft was lost. When the write was skipped, it showed the new text anyway. In both cases, the screen and storage didn't match, and the editor was already gone. The fix: have the save return `'saved' | 'failed'`, apply the text only after the write succeeds, and close the editor only on `'saved'`.
 
 The rule: an editor holding unsaved input closes on success, never before. Same for a settings or confirm modal. If its action fails, keep it open and show the failure inside it.
 
 ## A removal snapshot is the hook for Undo
 
-My reader shows a list of captures, and each one is a record in storage. Removing a capture takes it off the list and deletes the record, and Undo has to bring back both. When you remove an item from a list, take a snapshot `{ item, stored, at }` (the item, whether storage held it, and its index). Then a put-back function can restore it at that index.
+Dokseo shows a list of captures, and each one is a record in storage. Removing a capture takes it off the list and deletes the record, and Undo has to bring back both. When you remove an item from a list, take a snapshot `{ item, stored, at }` (the item, whether storage held it, and its index). Then a put-back function can restore it at that index.
 
 - If the removal fails in storage, the snapshot alone is enough, because storage still has the record.
 - Undo after a removal that did reach storage also writes the record back first, with the store's `put`. So the id, notes, tags and creation time come back unchanged.

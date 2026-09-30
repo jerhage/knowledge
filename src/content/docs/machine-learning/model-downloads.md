@@ -6,7 +6,7 @@ sidebar:
   order: 5
 ---
 
-A model for in-browser inference is a large download (the manga-ocr export I made for my reader is 123 MB). transformers.js downloads a model's files from the Hub the first time, stores them in the browser's Cache API, and reads them from there on later loads. Around that, an app wants three things: honest progress while it loads, a way to delete a model's files, and a way to resume a download that got stopped. I read everything here out of `@huggingface/transformers` 4.3.0. Stopping a download (there's no abort) is in [Long-Lived Model Workers](/machine-learning/worker-lifecycle/). What the stored files cost on disk, and why the weights are fetched with `no-store`, is in [Storage Persistence, Quota and What It Counts](/storage/persistence-and-quota/).
+A model for in-browser inference is a large download (the manga-ocr export I made for Dokseo, my manga and book reader, is 123 MB). transformers.js downloads a model's files from the Hub the first time, stores them in the browser's Cache API, and reads them from there on later loads. Around that, an app needs three things: accurate progress while it loads, a way to delete a model's files, and a way to resume a download that got stopped. I read everything here out of `@huggingface/transformers` 4.3.0. Stopping a download (there's no abort) is in [Long-Lived Model Workers](/machine-learning/worker-lifecycle/). What the stored files cost on disk, and why the weights are fetched with `no-store`, is in [Storage Persistence, Quota and What It Counts](/storage/persistence-and-quota/).
 
 ## Nothing in the progress union distinguishes a cached load from a downloaded one
 

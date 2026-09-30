@@ -8,7 +8,7 @@ sidebar:
 
 ## `space` activates a focused button; arrows do not
 
-In my reader, the arrow keys turn pages. The page also has on-screen buttons that turn pages, including a next-page button. One key handler on the window reads the keys.
+In Dokseo, my manga and book reader, the arrow keys turn pages. The page also has on-screen buttons that turn pages, including a next-page button. One key handler on the window reads the keys.
 
 Some elements already do something with certain keys, and the handler has to leave those presses alone. So before it acts on a key, it checks whether the element that has focus handles this key on its own.
 
@@ -62,4 +62,4 @@ Every key handler on a text field has to call it. Put it in the handler's pure c
 - A form's implicit submission is safe. It rides on `keypress`, and no composing key fires that.
 - To reproduce this in Playwright, dispatch a synthetic `new KeyboardEvent('keydown', { key: 'Enter', isComposing: true })` (or `keyCode: 229`) on the field. There's no real IME there.
 
-A related case is a search field in a modal that keeps its query between opens, like the one in my reader's ⌘K palette. When the modal reopens and focuses the field, WebKit can put the caret at the start of the old text, so what someone types next goes in front of it (see [WebKit putting the caret at the start of a refocused field](/html/forms-and-labels/)). Calling the field's `select()` after the modal has shown and focused it is how the kept query survives that refocus. With the whole value selected, typing replaces it and an arrow key keeps it, whatever the engine did with the caret.
+A related case is a search field in a modal that keeps its query between opens, like the one in Dokseo's ⌘K palette. When the modal reopens and focuses the field, WebKit can put the caret at the start of the old text, so what someone types next goes in front of it (see [WebKit putting the caret at the start of a refocused field](/html/forms-and-labels/)). Calling the field's `select()` after the modal has shown and focused it is how the kept query survives that refocus. With the whole value selected, typing replaces it and an arrow key keeps it, whatever the engine did with the caret.

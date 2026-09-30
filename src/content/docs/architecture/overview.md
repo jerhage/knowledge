@@ -6,7 +6,7 @@ sidebar:
   order: 1
 ---
 
-This is how I divide a front-end app into domains where every dependency points one way, and then make a tool refuse any import that points the other way. I've built two apps this way. [The reader](/projects/reader/) is a TypeScript SvelteKit SPA, and [riftcards](/projects/riftcards/) is a React Native app built with Expo. None of the structure depends on the UI framework. Only the glue does, and SvelteKit's glue is on [its own page](/architecture/sveltekit/).
+I divide a front-end app into domains where every dependency points one way, and then make a tool fail on any import that points the other way. I've built two apps this way. [Dokseo](/projects/dokseo/), my manga and book reader, is a TypeScript SvelteKit SPA, and [Rifty](/projects/rifty/), my Riftbound card app, is a React Native app built with Expo. None of the structure depends on the UI framework. Only the glue does, and SvelteKit's glue is on [its own page](/architecture/sveltekit/).
 
 The two apps hold to the same goals. Past those goals I made different choices for each app in a few places, and neither app's choice is the rule: the pages in this section describe each option with what it costs, and link the app that uses it. [Where the two apps differ](#where-the-two-apps-differ) lists those places.
 
@@ -14,7 +14,7 @@ The two apps hold to the same goals. Past those goals I made different choices f
 
 These hold in both apps. Everything else in the section is a way to meet them.
 
-**Domains.** I split the app by what it does, not by what kind of file something is. A domain is one folder per area of the app. In the card catalog these pages use as their example (below), the `cards` domain owns everything about cards: the entities, the storage, the screens. A change to cards then mostly stays inside one folder, and deleting a feature is deleting a folder. (Riftcards calls a domain a "feature", because "domain" is already a word in the card game it's about.)
+**Domains.** I split the app by what it does, not by what kind of file something is. A domain is one folder per area of the app. In the card catalog these pages use as their example (below), the `cards` domain owns everything about cards: the entities, the storage, the screens. A change to cards then mostly stays inside one folder, and deleting a feature is deleting a folder. (Rifty calls a domain a "feature", because "domain" is already a word in the card game it's about.)
 
 **An acyclic dependency graph.** Draw an arrow from every module to each module it imports. A directed acyclic graph (a DAG) is one where following arrows never brings you back to where you started. Imports point one way, down the layers, and the same holds one level up, between domains. Why it matters: with no cycle, every piece can be understood, tested and replaced with only the pieces below it in view. A cycle glues two modules (or two domains) into one unit that has to change and be read together. How the domain graph is kept acyclic is one of the choices: a rule that makes a cycle impossible by the graph's structure, or a check that detects one.
 
@@ -22,7 +22,7 @@ These hold in both apps. Everything else in the section is a way to meet them.
 
 **Dependency injection through one composition root.** Dependency injection means a module receives what it needs as an argument instead of building it or importing a concrete one itself. (The name comes from Martin Fowler's 2004 article, where the idea is a separate assembler that fills in the implementation.) The composition root is where those dependencies are built and passed in. The term is Mark Seemann's: "a (preferably) unique location in an application where modules are composed together", as close as possible to the entry point. In both apps it's one file, and it's the only file that imports concrete adapters. I wire it by hand, with no DI container library, which Seemann calls Pure DI. Why it matters: swapping an adapter touches one file, and a test swaps it by passing a fake.
 
-**A tool that says no.** Nothing in the language stops someone from writing an import that breaks the rules above. Until something reads every import and refuses the ones that point the wrong way, all of this is only a convention. The reader uses dependency-cruiser for that, and riftcards uses a small script of its own.
+**A tool that enforces the rules.** Nothing in the language stops someone from writing an import that breaks the rules above. Until something reads every import and fails on the ones that point the wrong way, all of this is only a convention. Dokseo uses dependency-cruiser for that, and Rifty uses a small script of its own.
 
 ## The running example
 
@@ -57,17 +57,21 @@ The general gotchas I ran into with dependency-cruiser itself are on [its own pa
 
 Each row is a place where both options meet the goals above, at a different cost. The linked section describes both and says what each one costs.
 
-| Choice | The reader | Riftcards | Where both are described |
+| Choice | Dokseo | Rifty | Where both are described |
 | --- | --- | --- | --- |
 | Keeping the domain graph acyclic | leaves and non-leaves, with a rule for each, so a cycle can't form | any DAG, plus a check that fails on a cycle between domains | [domains and the graph](/architecture/domains-and-the-graph/#or-check-cycles-on-the-domain-graph-itself) |
 | An id two domains both use | lives in the kernel | stays with the domain that owns it | [the kernel](/architecture/domains-and-the-graph/#the-kernel-imports-no-domain) |
 | Where adapters live | inside their domain | in a top-level `infrastructure/` | [ports and adapters](/architecture/ports-and-adapters/#adapters-live-inside-their-domain-not-in-a-top-level-infrastructure) |
 | What the composition root exposes | use cases | capabilities (ports), with the use case called where it runs | [the container](/architecture/dependency-injection/#the-container-exposes-use-cases-never-a-port) |
 | UI from two domains on one screen | only the route puts them together | a domain may also show UI another domain exports for its own types | [two domains on a screen](/architecture/dependency-injection/#two-domains-meet-at-the-route-not-inside-each-other) |
-| Who holds a screen's data and state | view models | data components | [data components](/architecture/data-components/) |
-| The tool that says no | dependency-cruiser path rules | a script that checks cycles at file and domain level | [the rules](/architecture/dependency-cruiser-rules/), [riftcards' checker](/projects/riftcards/architecture/checking-the-graph/) |
+| Who owns a write | a write view model, whose getters give the markup the write's state | a write data component or hook | [data components](/architecture/data-components/) |
+| How a read's state holds a use case's outcomes | nested: the outcome sits inside the ready state, and a pure function flattens the two for the markup | flat: one union holds the loading and failure states and every outcome | [data components](/architecture/data-components/) |
+| Refreshing another domain's reads after a write | a callback, implemented in route glue that calls the other domain's refresh helper | a callback, implemented inline in the route, which invalidates the other domain's keys itself | [two domains on a screen](/architecture/dependency-injection/#two-domains-meet-at-the-route-not-inside-each-other) |
+| The tool that enforces the rules | dependency-cruiser path rules | a script that checks cycles at file and domain level | [the rules](/architecture/dependency-cruiser-rules/), [Rifty's checker](/projects/rifty/architecture/checking-the-graph/) |
 
-Why each app picked what it did is on its own pages: [the reader's architecture](/projects/reader/architecture/domains/) and [riftcards' architecture](/projects/riftcards/architecture/layers-and-folders/).
+Both apps read data the same way: a data component owns each read. Both also have each use case return a named union of its outcomes. Dokseo started with a generic `Result` and moved to named unions, and why is on [result types](/architecture/result-types/).
+
+Why I picked each option for each app is on the app's own pages: [Dokseo's architecture](/projects/dokseo/architecture/domains/) and [Rifty's architecture](/projects/rifty/architecture/layers-and-folders/).
 
 ## Sources
 

@@ -25,7 +25,7 @@ Build the context ranges with `selectNodeContents(doc.body)` and then `setEnd(ra
 
 ## A click collapses a selection after `pointerup`, so anything read there is already condemned
 
-When someone selects text in a chapter, my reader shows a button that offers to save the selection as a passage. The question is when to read the selection, and when to take the offer away again. A click elsewhere clears a selection, but not at the moment it looks like it does.
+When someone selects text in a chapter, Dokseo, my manga and book reader, shows a button for saving the selection as a passage. The question is when to read the selection, and when to remove the button again. A click elsewhere clears a selection, but not at the moment it looks like it does.
 
 Measured in Chromium against a real document, with capturing listeners:
 

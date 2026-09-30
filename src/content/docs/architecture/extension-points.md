@@ -6,7 +6,7 @@ sidebar:
   order: 11
 ---
 
-A local-first app keeps its data on the device and works without a network. The [card catalog](/architecture/overview/#the-running-example) stores its cards in the browser, and [riftcards](/projects/riftcards/architecture/capabilities-and-composition/#no-server-yet) keeps everything in SQLite on the phone. Neither has a server, sync, sign-in or an offline queue. They might get some of those later.
+A local-first app keeps its data on the device and works without a network. The [card catalog](/architecture/overview/#the-running-example) stores its cards in the browser, and [Rifty](/projects/rifty/architecture/capabilities-and-composition/#no-server-yet), my Riftbound card app, keeps everything in SQLite on the phone. Neither has a server, sync, sign-in or an offline queue. They might get some of those later.
 
 Each one has a place where it would plug in, so that when it arrives it goes into the layer that should absorb it. None of it is a design to build against today.
 

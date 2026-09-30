@@ -6,7 +6,7 @@ sidebar:
   order: 2
 ---
 
-A React Native app that runs on phones and tablets from one codebase has to decide, on every screen, whether there's room for one thing or two. On a phone, opening an item pushes a new screen. On a tablet, the same item can open in a pane beside the list it came from. These are the rules I use to make that decision and to size things once it's made. The worked example, with every name and value, is [riftcards' phone and tablet layout](/projects/riftcards/presentation/phone-and-tablet/).
+A React Native app that runs on phones and tablets from one codebase has to check, on every screen, whether there's room for one thing or two. On a phone, opening an item pushes a new screen. On a tablet, the same item can open in a pane beside the list it came from. These are the rules I use to make that decision and to size things once it's made. The worked example, with every name and value, is [the phone and tablet layout of Rifty, my Riftbound card app](/projects/rifty/presentation/phone-and-tablet/).
 
 ## Phone or tablet comes from the window's shorter side
 

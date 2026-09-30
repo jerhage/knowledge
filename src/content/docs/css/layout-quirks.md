@@ -60,7 +60,7 @@ Taking only the picture out of flow gives a 0 px row. So does `contain: size` on
 
 ## A dock that hides must be sized by its content, not by a class
 
-On phones, my reader has a panel at the bottom of the screen: a toggle, and under it a list that the toggle shows and hides. The panel is a flex item in a column, and its open size came from `block-size: 40%` on the panel element itself. Hiding swapped a class on the panel, so the panel's own block size went from a percentage of its flex container back to `auto`.
+On phones, Dokseo, my manga and book reader, has a panel at the bottom of the screen: a toggle, and under it a list that the toggle shows and hides. The panel is a flex item in a column, and its open size came from `block-size: 40%` on the panel element itself. Hiding swapped a class on the panel, so the panel's own block size went from a percentage of its flex container back to `auto`.
 
 On iOS Safari, the panel kept its open height after I hid it. Someone taps the toggle to hide the list: the toggle still shows and the list is gone, but a blank band about 40% of the screen tall stays below the toggle, so the page area never grows back. Chromium redoes the layout correctly after the class change. I couldn't reproduce the stale height outside Safari, so the cause here is a deduction: a flex item loses its own percentage block size through a class change, next to a sibling whose size depends on it.
 

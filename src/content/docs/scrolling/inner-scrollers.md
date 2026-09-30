@@ -36,11 +36,11 @@ More on focus timing around `inert` and modals is in [focus around modal dialogs
 
 ## Restoring an inner scroller's position
 
-In my reader, the library is a list of books inside the scroller, and opening a book goes to the book's own route. Coming back to the library should land where the list was, not at the top.
+In Dokseo, my manga and book reader, the library is a list of books inside the scroller, and opening a book goes to the book's own route. Coming back to the library should return to where the list was, not to the top.
 
 When an inner area scrolls instead of the window, SvelteKit's own scroll restoration doesn't help anymore. A page can export a `snapshot` that captures the scroller's `scrollTop` and restores it. (The snapshot is taken before the old page is removed, so reading it there is safe.) But SvelteKit *only* restores a snapshot on Back/Forward and reload, never on a link.
 
-A "back to the list" link, like the reader's link to the library, is a new navigation. So I also keep a per-tab memory that restores the position when an `afterNavigate` of type `link` comes from the detail route (the book's route). Any other arrival starts at the top. (How `afterNavigate` behaves on reused routes is in [SvelteKit navigation](/svelte/sveltekit-navigation/).)
+A "back to the list" link, like Dokseo's link to the library, is a new navigation. So I also keep a per-tab memory that restores the position when an `afterNavigate` of type `link` comes from the detail route (the book's route). Any other arrival starts at the top. (How `afterNavigate` behaves on reused routes is in [SvelteKit navigation](/svelte/sveltekit-navigation/).)
 
 If the list only fills in after an async load, the offset is held in the view model, and an `$effect` applies it once the list has rendered (a pure step function: wait / scroll / none).
 

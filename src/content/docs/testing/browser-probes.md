@@ -10,7 +10,7 @@ By "probe" I mean a throwaway Playwright script that opens the real page and rea
 
 ## Holding a loading state on screen by stalling a read
 
-Many screens show a loading state while they wait on storage. In my reader, opening a book shows an "Opening…" screen while the book's file is read from OPFS, and the library shows a loading line while IndexedDB opens. Each of those states often lasts only as long as one storage read, a few milliseconds. That's too short to catch by waiting for it, and too short to screenshot.
+Many screens show a loading state while a storage read is in progress. In Dokseo, my manga and book reader, opening a book shows an "Opening…" screen while the book's file is read from OPFS, and the library shows a loading line while IndexedDB opens. Each of those states often lasts only as long as one storage read, a few milliseconds. That's too short to catch by waiting for it, and too short to screenshot.
 
 The way around that is an init script, a script Playwright runs in the page before the page's own scripts. The init script wraps the storage call so it waits on a flag the probe controls. While the flag is set, the read doesn't finish, so the page stays in its loading state for as long as the flag stays set. The page's own code doesn't change at all.
 

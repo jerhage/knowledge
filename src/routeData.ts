@@ -29,6 +29,7 @@ const applyConfig = (link: SidebarLink | undefined, config: PrevNextConfig): Sid
 const groupLabels: Record<string, string> = {
 	css: 'CSS',
 	'design-systems': 'Design systems',
+	dokseo: 'Dokseo',
 	ebooks: 'Ebooks',
 	files: 'Files',
 	html: 'HTML',
@@ -40,8 +41,7 @@ const groupLabels: Record<string, string> = {
 	projects: 'Projects',
 	react: 'React',
 	'react-native': 'React Native',
-	reader: 'Reader',
-	riftcards: 'Riftcards',
+	rifty: 'Rifty',
 	scrolling: 'Scrolling',
 	security: 'Security',
 	storage: 'Storage',

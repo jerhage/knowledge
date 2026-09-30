@@ -6,7 +6,7 @@ sidebar:
   order: 1
 ---
 
-My reader shows comic and manga pages that come out of archives and PDFs. A page can be decoded into an `ImageBitmap` and drawn on a canvas, or shown as an image element, and either way it has to end up on screen at the right size. Someone can also drag a rectangle over a page (say, over a speech bubble) to have the text in it recognized, which means the app has to know how big the page really is.
+Dokseo, my manga and book reader, shows comic and manga pages that come out of archives and PDFs. A page can be decoded into an `ImageBitmap` and drawn on a canvas, or shown as an image element, and either way it has to end up on screen at the right size. Someone can also drag a rectangle over a page (say, over a speech bubble) to have the text in it recognized, which means the app has to read the page's real size.
 
 ## Hand a bitmap straight to a canvas, and let CSS do the scaling
 

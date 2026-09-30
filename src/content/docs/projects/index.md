@@ -8,5 +8,5 @@ sidebar:
 
 These are notes tied to specific projects. The rest of the site explains ideas in general. These pages show how those ideas play out in a real app, with the real implementation.
 
-- [Reader](/projects/reader/)
-- [Riftcards](/projects/riftcards/)
+- [Dokseo](/projects/dokseo/)
+- [Rifty](/projects/rifty/)

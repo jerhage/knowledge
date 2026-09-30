@@ -161,7 +161,7 @@ interface SaveCardAction {
 }
 ```
 
-Availability is one value rather than a `busy` boolean and an `enabled` boolean. Two booleans allow four combinations, and one of them, busy and enabled at once, means nothing: a control that shows a save in flight and still accepts a press. With one value, that combination can't be written, and the control derives both its busy indicator and its disabled state from it. Riftcards made the same change; see [data components in riftcards](/projects/riftcards/presentation/data-components/#why-the-save-boundary-draws-nothing).
+What the owner stores is one value per write, never two booleans. A `busy` boolean and an `enabled` boolean allow four combinations, and one of them, busy and enabled at once, means nothing: a control that shows a save in flight and still accepts a press. With one stored value (`availability` here, or a write-state union such as `idle | saving | failed`), that combination can't be stored, and the busy indicator and the disabled state are both derived from it. A write view model can still expose `busy` and `enabled` as separate getters, because each is computed from the one union. I made the same change in Rifty, my Riftbound card app; see [data components in Rifty](/projects/rifty/presentation/data-components/#why-the-save-boundary-draws-nothing).
 
 The described action isn't the write's lifecycle union, and the same prohibition applies as for a read: a presentational child never receives a write state, only values derived from it. When the owner and the presentation both need the same derivation (the label for each state, say), it lives in a format module both may import. Then neither side imports the other.
 
@@ -180,7 +180,7 @@ Stating it as "reads draw their states, writes draw their children" gives the sa
 
 A data component that only forwards to another one isn't an exception either. If it returns its children directly because the one it delegates to owns the match, the rule still holds.
 
-In riftcards the save's data component is the case that made this visible; its history is in [why the save boundary draws nothing](/projects/riftcards/presentation/data-components/#why-the-save-boundary-draws-nothing).
+In Rifty the save's data component is the case that made this visible; its history is in [why the save boundary draws nothing](/projects/rifty/presentation/data-components/#why-the-save-boundary-draws-nothing).
 
 ## Unsaved items are an overlay; an optimistic write puts back only what it took
 
@@ -224,13 +224,48 @@ With reads in data components, a view model keeps three kinds of job:
 
 It never holds a read, a generation counter for a read, or a `reload()`, and it never reads the query cache itself. Sometimes one of its commands needs a cached value at the moment it runs: the current card list, to work out the next card to open, or the stored display settings, to open a document. That value comes from a data component above the view model, in one of two ways:
 
-My reader uses view models; see [the container and its view models](/projects/reader/architecture/wiring/#containerts-and-contextts). Riftcards uses data components; see [data components in riftcards](/projects/riftcards/presentation/data-components/).
+- The data component draws nothing and exposes its read state, and the view model reaches it through a closure. The command gets `loading`, `failed` or `ready` and branches on it, the same states a screen draws.
+- The data component mounts the part that holds the command only once its read has settled, and passes the value down as a prop. The command then takes the value as an argument and reads nothing.
+
+A command can also run before the read it needs has settled. Then it keeps the request and runs it when the data component calls back that the read settled.
+
+The alternative, a command that awaits the cache directly, puts a read outside every component. No screen shows its loading or failure, and the usual `.catch(() => fallback)` on it gives a throw the same fallback as an expected refusal. The Svelte form of these pieces, including the callback, is on [app code never reads the cache imperatively](/svelte/svelte-query/#app-code-never-reads-the-cache-imperatively).
+
+A view model takes the outside effects it needs (a clipboard write, a notice) as functions from whoever builds it, so it runs in a unit test without rendering anything. The Svelte form of these rules is on [view models hold runes in a `.svelte.ts` file](/architecture/sveltekit/#view-models-hold-runes-in-a-sveltets-file).
+
+Both of my apps use data components for reads. Rifty owns a write with a write data component or a hook. Dokseo, my manga and book reader, keeps view models for UI state and for writes; its classes are on [data components and view models in Dokseo](/projects/dokseo/architecture/data-components-and-view-models/).
+
+## Flat or nested read state
+
+The shared read adapter maps the library's result into one union. The use case's own outcomes can go into it flat or nested.
+
+```ts
+// flat: the use case's union is spread in as peers
+type ReadState<R> =
+  | { readonly type: "loading" }
+  | { readonly type: "failed"; readonly error: unknown }
+  | R;
+
+// nested: the use case's result sits inside the ready variant
+type ReadState<T> =
+  | { readonly kind: "loading" }
+  | { readonly kind: "failed"; readonly message: string }
+  | { readonly kind: "ready"; readonly value: T };
+```
+
+**Flat** puts `notFound` beside `loading` with no extra work, so a data component matches them all in one place. It requires every use case's result to be a tagged union, and it reserves the names `loading` and `failed` (and `idle` and `saving` for writes), which no use case may use for a variant of its own.
+
+**Nested** works for any `T`, including a bare value or `void`. But a data component whose use case has outcomes besides success needs a small pure function that flattens `ReadState<Result>` into its own union, with `loading`, `failed` and each outcome as peers, written with an exhaustive `match()`. Without it, the markup would match a failure inside the success branch.
+
+Either way, the mapping from the library's result to the union is a pure function beside the union, typed over a structural snapshot of only the fields it reads, so it's unit-tested without the library. A failed refetch maps to the ready or success variant with the cached data kept; only a failed first load maps to `failed`.
+
+Rifty uses the flat form ([match one flat union](/react/render-props-and-tanstack-query/#match-one-flat-union-not-tanstack-querys-result-object)); Dokseo uses the nested one with a flattener per data component ([data components in Svelte](/svelte/data-components/#a-use-cases-answers-are-flattened-beside-the-read)).
 
 ## Hooks for mechanics, data components for side effects
 
 In frameworks with hooks (or composables, or reusable state classes), the tempting move is to turn a data component into a hook that returns `{ data, isLoading, error }`. That moves the code without keeping what the data component was for. A hook at this boundary passes its lifecycle to its caller, and the caller becomes the async orchestrator the data component existed to prevent.
 
-Here's how that goes wrong, from riftcards. A save was written as a hook that returned its state. The component that called the hook passed the state down to its child, and so on, until the state had traveled five components down into a leaf that matched `idle | saving | failed` to draw a button. Every component in between carried a lifecycle it had no use for.
+In Rifty, a save was written as a hook that returned its state. The component that called the hook passed the state down to its child, and so on, until the state had traveled five components down into a leaf that matched `idle | saving | failed` to draw a button. Every component in between received a lifecycle it had no use for.
 
 Hooks are still right for local UI mechanics and shared behavior: the state of a filter sheet, a debounced value, the steps of a workflow. The deciding question is which part owns the side effect.
 

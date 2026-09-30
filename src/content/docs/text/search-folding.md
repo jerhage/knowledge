@@ -18,7 +18,7 @@ My first version walked by code point. That isn't enough. The piece has to be a 
 
 ## Fold by grapheme cluster, because a filename is decomposed
 
-My reader's library search folds the query and each book's title, then looks for one inside the other. A search for `나` found nothing in titles, even with `나 혼자만 레벨업 1권` right there on screen, while the same query found the same text elsewhere.
+The library search in Dokseo, my manga and book reader, folds the query and each book's title, then searches for one inside the other. A search for `나` found nothing in titles, even with `나 혼자만 레벨업 1권` right there on screen, while the same query found the same text elsewhere.
 
 macOS filenames are often *decomposed*. HFS+ stored every name in a decomposed form. APFS keeps whatever form a name was created in, so a name that was written decomposed stays decomposed. A title that comes from a filename or a folder name has `나` as `U+1102 U+1161` (two code points), while the `나` you type is the single `U+B098`. Text from other sources (OCR output, typed input) is composed.
 

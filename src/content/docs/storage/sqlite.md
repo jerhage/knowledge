@@ -6,7 +6,7 @@ sidebar:
   order: 5
 ---
 
-These are the SQLite facts I needed while building an app that keeps all its data in one SQLite file on the device, with Drizzle generating the migrations. Each one is checked against [sqlite.org](https://www.sqlite.org/). The Expo side of the setup is on [Expo setup](/react-native/expo-setup/), and the worked example is [riftcards' SQLite and Drizzle page](/projects/riftcards/persistence/sqlite-and-drizzle/).
+These are the SQLite facts I needed while building an app that keeps all its data in one SQLite file on the device, with Drizzle generating the migrations. Each one is checked against [sqlite.org](https://www.sqlite.org/). The Expo side of the setup is on [Expo setup](/react-native/expo-setup/), and the worked example is [the SQLite and Drizzle page for Rifty, my Riftbound card app](/projects/rifty/persistence/sqlite-and-drizzle/).
 
 ## ALTER TABLE does four things; anything else is a table rebuild
 
@@ -43,13 +43,13 @@ Two details of the keys themselves matter once they're on:
 
 A statement's values are bound as parameters (the `?` placeholders), and SQLite caps how many one statement may use. The cap, `SQLITE_MAX_VARIABLE_NUMBER`, [defaulted to 999 before SQLite 3.32.0 and is 32766 since](https://www.sqlite.org/limits.html). A build can also set its own value.
 
-A batch insert binds one parameter per column per row, so a batch of rows costs rows × columns parameters. An `IN (…)` list costs one per item. Sizing batches against 999 is the conservative choice: a batch that fits it fits any build, whatever SQLite the app ends up running on. In an upsert, an `excluded.column` reference in the conflict clause is a column reference, not a parameter, so it adds nothing to the count. How riftcards sizes its chunks and batches against the limit is in [the variable limit](/projects/riftcards/persistence/sqlite-and-drizzle/#the-variable-limit).
+A batch insert binds one parameter per column per row, so a batch of rows costs rows × columns parameters. An `IN (…)` list costs one per item. Sizing batches against 999 is the conservative choice: a batch that fits it fits any build, whatever SQLite the app ends up running on. In an upsert, an `excluded.column` reference in the conflict clause is a column reference, not a parameter, so it adds nothing to the count. How Rifty sizes its chunks and batches against the limit is in [the variable limit](/projects/rifty/persistence/sqlite-and-drizzle/#the-variable-limit).
 
 ## LIKE folds case for ASCII letters only
 
 SQLite's `LIKE` is case-insensitive, but [only for ASCII characters by default](https://www.sqlite.org/lang_expr.html#the_like_glob_regexp_match_and_extract_operators): `'a' LIKE 'A'` is true, and `'æ' LIKE 'Æ'` is false. Case folding across all of Unicode needs the ICU extension, which provides its own `LIKE`.
 
-So a search that has to match accented or non-Latin text the same way regardless of case can't rely on plain `LIKE`. It also can't be split between SQL and JavaScript, because the two disagree about case: a row could be found by one and not by the other. [Riftcards' core rules search](/projects/riftcards/rules-and-notes/rules-search/) runs entirely in JavaScript partly for this reason, and [folding text for search](/text/search-folding/) covers the JavaScript side.
+So a search that has to match accented or non-Latin text the same way regardless of case can't rely on plain `LIKE`. It also can't be split between SQL and JavaScript, because the two handle case differently: a row could be found by one and not by the other. [Rifty's core rules search](/projects/rifty/rules-and-notes/rules-search/) runs entirely in JavaScript partly for this reason, and [folding text for search](/text/search-folding/) covers the JavaScript side.
 
 ## A new table is one more migration, not a version bump
 

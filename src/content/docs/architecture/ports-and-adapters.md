@@ -42,9 +42,9 @@ Each port gets a name for what the domain needs, and each adapter gets a name fo
 
 A port is one interface per file, named for the role it plays. It gets no `I` prefix and no `port` in the file name. I keep `Repository` for ports with collection semantics (get, list, add, remove), like `CardRepository`. A port that does a job instead, a service port, is named for what it does, like `Thumbnailer`. An adapter's file name says what it's built on: IndexedDB, a canvas, or a fake for tests.
 
-"What it's built on" means the store or device the adapter crosses to, not the library it happens to use to get there. Riftcards keeps its cards in SQLite and queries them through Drizzle, an ORM, and its adapter is `SqliteCardRepository`, not `DrizzleCardRepository`. Replacing Drizzle with hand-written SQL would then rename nothing, while moving the cards out of SQLite would rename the adapter, which is right, because that changes what the adapter crosses to.
+"What it's built on" means the store or device the adapter crosses to, not the library it happens to use to get there. Rifty, my Riftbound card app, keeps its cards in SQLite and queries them through Drizzle, an ORM, and its adapter is `SqliteCardRepository`, not `DrizzleCardRepository`. Replacing Drizzle with hand-written SQL would then rename nothing, while moving the cards out of SQLite would rename the adapter, which is right, because that changes what the adapter crosses to.
 
-How wide a port is has two options too. The card catalog's `CardRepository` is one port with every operation on cards, and every consumer takes all of it. The other option splits it into one narrow port per need (a lister, a finder, a counter), and each consumer takes only the one it uses, so its fake in a test has one method. The repository then survives only as the name for the whole set, which the adapter implements and the composition root builds. Riftcards works that way, and [narrow capabilities](/architecture/capabilities/#one-interface-per-need) covers it.
+A port can also be wide or narrow. The card catalog's `CardRepository` is one port with every operation on cards, and every consumer takes all of it. The other option splits it into one narrow port per need (a lister, a finder, a counter), and each consumer takes only the one it uses, so its fake in a test has one method. The repository then survives only as the name for the whole set, which the adapter implements and the composition root builds. Rifty works that way, and [narrow capabilities](/architecture/capabilities/#one-interface-per-need) covers it.
 
 ## `adapters/` implements the ports
 
@@ -79,7 +79,7 @@ That check needs the private-window failure to be recognizable. In a Firefox pri
 
 ## Adapters live inside their domain, not in a top-level `infrastructure/`
 
-There are two places adapters can live. The card catalog, like the reader, nests them inside their domain, in `adapters/`. The other option puts every adapter in one top-level `infrastructure/` folder, apart from the domains, and riftcards works that way. The import direction comes out the same either way, because in both layouts the adapter imports the port and the domain never imports the adapter. They differ in what sits next to what.
+The card catalog nests its adapters inside their domain, in `adapters/`, and so does Dokseo, my manga and book reader. The other option puts every adapter in one top-level `infrastructure/` folder, apart from the domains, and Rifty works that way. The import direction comes out the same either way, because in both layouts the adapter imports the port and the domain never imports the adapter. They differ in what sits next to what.
 
 **Adapters inside their domain.** What this buys:
 
@@ -91,16 +91,16 @@ What it costs: code that several domains' adapters share, like opening an Indexe
 
 **A top-level `infrastructure/`.** It holds every technology detail in one place: the driver, the schema, the queries, the mappers from stored rows to the domain's types. What this buys:
 
-- One store shared by many domains is set up in one place. Riftcards keeps cards, sets, the core rules, decks, bookmarks and notes in one SQLite database with one set of migrations, and all of that sits next to the adapters that query it.
-- Rows, driver errors and anything else from the storage library stop at one folder, and no domain file has any reason to know them.
-- The edges from `infrastructure/` into the domains show which domains store anything. In riftcards, the two features that store nothing are exactly the two that `infrastructure/` never imports.
+- One store shared by many domains is set up in one place. Rifty keeps cards, sets, the core rules, decks, bookmarks and notes in one SQLite database with one set of migrations, and all of that sits next to the adapters that query it.
+- Rows, driver errors and anything else from the storage library stop at one folder, and no domain file has any reason to import them.
+- The edges from `infrastructure/` into the domains show which domains store anything. In Rifty, the two features that store nothing are exactly the two that `infrastructure/` never imports.
 
 What it costs: a port and its adapter live in two folders, and deleting a domain means deleting in both. It also changes what the domain graph shows. `infrastructure/` is one node with an edge to every domain that stores anything, so the dependency on storage belongs to that shared node instead of to each domain. Which domains store can be read off `infrastructure/`'s edges, as above, but a domain's own node no longer shows it. And the layout holds only through two direction rules, which are the ones that break without any error:
 
 - **A domain never imports `infrastructure/`.** Otherwise a use case can reach past its port to the adapter.
-- **`infrastructure/` never imports the composition root.** The composition root imports every adapter, so an adapter that reaches back for a setting closes a cycle. Riftcards had exactly that: the module that opens its database imported the image host from the composition folder, and the fix was to pass the host in as a parameter (the general move is [inverting an input](/architecture/domains-and-the-graph/#break-a-cycle-by-inverting-an-input-not-by-moving-a-file)).
+- **`infrastructure/` never imports the composition root.** The composition root imports every adapter, so an adapter that reaches back for a setting closes a cycle. Rifty had exactly that: the module that opens its database imported the image host from the composition folder, and the fix was to pass the host in as a parameter (the general move is [inverting an input](/architecture/domains-and-the-graph/#break-a-cycle-by-inverting-an-input-not-by-moving-a-file)).
 
-Riftcards' layout, and why it went that way, is on [its layers and folders](/projects/riftcards/architecture/layers-and-folders/). The reader's is on [its container, ports and adapters](/projects/reader/architecture/wiring/#the-ports-and-their-adapters).
+Rifty's layout, and why I set it up that way, is on [its layers and folders](/projects/rifty/architecture/layers-and-folders/). Dokseo's is on [its container, ports and adapters](/projects/dokseo/architecture/wiring/#the-ports-and-their-adapters).
 
 ## An adapter picked per variant is chosen by the container and loaded on demand
 

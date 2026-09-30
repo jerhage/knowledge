@@ -10,7 +10,7 @@ The selection rectangle I built on top of these is in [a selection marquee over 
 
 ## Capture the pointer or a drag dies at the edge
 
-In my reader's page viewer, dragging with the mouse either draws a selection rectangle or pans the page. A drag starts with a `pointerdown` on the viewer, and the viewer follows the moves until the pointer comes up.
+In the page viewer of Dokseo, my manga and book reader, dragging with the mouse either draws a selection rectangle or pans the page. A drag starts with a `pointerdown` on the viewer, and the viewer tracks the moves until the pointer comes up.
 
 By default, the browser sends each move to whatever element is under the pointer. So when someone drags past the edge of the viewer, the moves and the final up event go somewhere else, and the drag just stops, with no error.
 
@@ -52,7 +52,7 @@ With `setPointerCapture` on the element that got `pointerdown`, the `pointerup` 
 
 ## A shared gesture layer exports handlers; it does not attach them
 
-In my reader, the selection rectangle is drawn by a selection layer, a component that sits inside the viewer. The viewer (the host) has pointer handlers of its own, for panning. When a press could start either one, the pan has to win over a selection.
+In Dokseo, the selection rectangle is drawn by a selection layer, a component that sits inside the viewer. The viewer (the host) has pointer handlers of its own, for panning. When a press could start either one, the pan has to win over a selection.
 
 So the selection layer doesn't listen for pointer events itself. It exposes `pointerdown`/`pointermove`/`pointerup`/`pointercancel` as component exports, and the host calls them from its own handlers. If the layer attached them itself with `addEventListener`, they'd end up in a different queue from the host's. Svelte 5 *delegates* pointer events: it handles them with a listener at the root instead of listeners on each element. So a direct listener on the same element fires first, and whether the pan beats a selection would come down to mount order. Forwarding keeps the order of precedence visible in one function.
 
@@ -62,7 +62,7 @@ How delegated handlers compare with plain window listeners is in [attachments an
 
 ## An overlay inside a delegated parent swallows a whole touch
 
-My reader shows a first-use touch guide: a scrim over the viewer that shows where to tap or swipe, and goes away when someone touches it. The guide sits inside the viewer's frame, and the frame's pointer handlers (the ones that turn pages) are Svelte 5 delegated events. A touch that dismisses the guide must not also reach the frame and turn a page.
+Dokseo shows a first-use touch guide: a scrim over the viewer that shows where to tap or swipe, and goes away when someone touches it. The guide sits inside the viewer's frame, and the frame's pointer handlers (the ones that turn pages) are Svelte 5 delegated events. A touch that dismisses the guide must not also reach the frame and turn a page.
 
 `stopPropagation` still works with delegation: if a child's delegated handler stops the event, the parent's handler doesn't run. For a touch, that isn't enough by itself. If the overlay disappeared on `pointerdown`, the rest of the gesture (`move`, `up`) would land on the frame. So the overlay takes pointer capture on `pointerdown`, dismisses itself on `pointerup` / `pointercancel`, and stops each of those events. The whole touch stays on the overlay.
 

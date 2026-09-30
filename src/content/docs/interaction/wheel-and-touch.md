@@ -36,7 +36,7 @@ In Chromium and Firefox, both arrive as the same event (a `wheel` with `ctrlKey`
 
 `manipulation` is `pan-x pan-y pinch-zoom`. It removes double-tap zoom (and the tap delay that comes with it) and nothing else. To stop a pinch from zooming the page, an element and its ancestors need a value without `pinch-zoom`: `pan-x pan-y` or `none`.
 
-The value that applies is the intersection along the ancestor chain. In my reader, the screen root had `manipulation`, and the paged viewer's frame inside it had `none`. The frame's `none` still wins inside the root's `manipulation`, but a pinch on the header (outside the frame) still zooms the whole page. Putting `pan-x pan-y` on the screen root fixes the header, but it also takes away a scrolling strip's native pinch, so only do that once the strip has its own pinch.
+The value that applies is the intersection along the ancestor chain. In Dokseo, my manga and book reader, the screen root had `manipulation`, and the paged viewer's frame inside it had `none`. The frame's `none` still wins inside the root's `manipulation`, but a pinch on the header (outside the frame) still zooms the whole page. Putting `pan-x pan-y` on the screen root fixes the header, but it also takes away a scrolling strip's native pinch, so only do that once the strip has its own pinch.
 
 ## A long press on a scroller holds the scroll from a non-passive `touchmove`
 

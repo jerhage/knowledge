@@ -8,7 +8,7 @@ sidebar:
 
 A component isn't finished when it looks right. It's finished when someone using a screen reader, a larger text size or a less precise finger can use it too. I treat that as a condition of done, not a pass before release.
 
-The rules below came out of an accessibility audit of riftcards, a React Native app, and each one exists because its absence was found there rather than imagined. They're written in native platform terms: a **role** (what kind of control an element is), a **state** (disabled, selected, busy), **accessibility actions** (named actions a screen reader can invoke). Where the web has an equivalent, it gets one line. How riftcards applies them, with the audit's findings, is on [accessibility in riftcards](/projects/riftcards/presentation/accessibility/). The React Native props for each rule are on [React Native accessibility](/react-native/accessibility/).
+The rules below came out of an accessibility audit of Rifty, my React Native card app for the Riftbound card game, and each one exists because its absence was found there rather than imagined. They're written in native platform terms: a **role** (what kind of control an element is), a **state** (disabled, selected, busy), **accessibility actions** (named actions a screen reader can invoke). Where the web has an equivalent, it gets one line. How Rifty applies them, with the audit's findings, is on [accessibility in Rifty](/projects/rifty/presentation/accessibility/). The React Native props for each rule are on [React Native accessibility](/react-native/accessibility/).
 
 ## Why it blocks instead of waiting for a pass
 
@@ -85,7 +85,7 @@ Web: a live region, `role="status"` or `aria-live`, which is how WCAG 4.1.3 Stat
 
 ## An exception is written down or it is not an exception
 
-Sometimes a rule is broken on purpose. In riftcards, card art shows a card's domain by color alone while the palette work is pending. The lettered alternative was built and then reverted.
+Sometimes a rule is broken on purpose. In Rifty, card art shows a card's domain by color alone while the palette work is pending. The lettered alternative was built and then reverted.
 
 That exception is written down, with the reason, where the rule lives. That matters because the next person to read the code usually has none of the reasoning that produced the exception. An unexplained violation reads as an oversight, so they either fix it again, undoing a decision, or copy it as precedent into new code. Both are worse than the exception itself. A rule broken with no note saying why stops being a rule.
 
@@ -93,7 +93,7 @@ So any deliberate departure is written beside the rule, or it isn't allowed; see
 
 ## An audit is also a layout audit
 
-Some of what the riftcards audit found wasn't specific to assistive technology at all. They were ordinary bugs that affected everyone:
+Some of what the Rifty audit found wasn't specific to assistive technology at all. They were ordinary bugs that affected everyone:
 
 - The search field's tap area was about 17 points tall inside a 38-point row, so a tap on the bottom part of the row did nothing.
 - A section label was truncated at the normal text size.

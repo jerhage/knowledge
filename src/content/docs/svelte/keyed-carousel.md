@@ -6,7 +6,7 @@ sidebar:
   order: 6
 ---
 
-My reader shows an image book one page at a time, and you turn pages with a swipe or a page-turn control. The carousel behind it has up to three slots: the previous page, the current page and the next page. The two neighbors sit beside the current page, off screen, and a turn slides them into place. The CSS side of this carousel (three keyed slots, a settling class, the fallback timer) is in the [component contract](/design-systems/component-contract/#options-a-system-adds-beyond-the-baseline). This page is the Svelte side.
+Dokseo, my manga and book reader, shows an image book one page at a time, and you turn pages with a swipe or a page-turn control. The carousel behind it has up to three slots: the previous page, the current page and the next page. The two neighbors sit beside the current page, off screen, and a turn slides them into place. The CSS side of this carousel (three keyed slots, a settling class, the fallback timer) is in the [component contract](/design-systems/component-contract/#options-a-system-adds-beyond-the-baseline). The Svelte side keys the panes so a loaded page stays loaded across a turn, and reads a transition that a state class turns on.
 
 ## A keyed pane keeps a loaded page across a turn
 

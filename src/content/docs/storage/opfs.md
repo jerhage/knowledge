@@ -6,7 +6,7 @@ sidebar:
   order: 4
 ---
 
-My reader stores each book someone uploads as a file in OPFS, and a book can be hundreds of megabytes. It also downloads model weights into OPFS in chunks. The handles and the API surface are in [The Origin Private File System](/storage/origin-private-file-system/). These are the parts that bit me when writing large files into it.
+Dokseo, my manga and book reader, stores each book someone uploads as a file in OPFS, and a book can be hundreds of megabytes. It also downloads model weights into OPFS in chunks. The handles and the API surface are in [The Origin Private File System](/storage/origin-private-file-system/). These are the parts that bit me when writing large files into it.
 
 ## A blob is written to OPFS from a worker, because Safari
 

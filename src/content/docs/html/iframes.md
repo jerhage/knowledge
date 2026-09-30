@@ -12,7 +12,7 @@ My case is an ebook renderer (foliate-js) that shows each chapter in a same-orig
 
 A menu usually closes when someone clicks outside it. The usual way to detect that click is an outside-click rule written as `document.addEventListener('pointerdown', ...)` on the host.
 
-A pointer event inside an iframe goes to the iframe's own document and bubbles up to the iframe's own window. It never reaches the parent `document`, so that rule doesn't fire. Neither does a `popover="auto"` light dismiss, because that also only watches its own document. In my reader, someone opens a [dropdown](/html/dropdown-menus/), clicks into the chapter to get back to reading, and the dropdown stays open on top of the text.
+A pointer event inside an iframe goes to the iframe's own document and bubbles up to the iframe's own window. It never reaches the parent `document`, so that rule doesn't fire. Neither does a `popover="auto"` light dismiss, because that also only applies to its own document. In Dokseo, my manga and book reader, someone opens a [dropdown](/html/dropdown-menus/), clicks into the chapter to get back to reading, and the dropdown stays open on top of the text.
 
 What the host does receive: the click moves focus into the frame, and the top `window` fires `blur`. `blur` on `window` only fires when the document as a whole loses focus (to a child frame, another window, or the browser UI). It never fires when focus moves between elements inside the page. That makes it a safe second signal for closing.
 

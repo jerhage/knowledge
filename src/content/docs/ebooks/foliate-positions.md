@@ -6,7 +6,7 @@ sidebar:
   order: 1
 ---
 
-My reader shows EPUB books with foliate-js, a library that lays a book out in pages, and it saves the place someone has reached so the book reopens there. foliate reports that place as a CFI (EPUB Canonical Fragment Identifier, a string that points to a location in the book). These are the parts of foliate that decide whether the saved place is right. Checked against foliate-js 1.0.1.
+Dokseo, my manga and book reader, shows EPUB books with foliate-js, a library that lays a book out in pages, and it saves the place someone has reached so the book reopens there. foliate reports that place as a CFI (EPUB Canonical Fragment Identifier, a string that points to a location in the book). These are the parts of foliate that determine whether the saved place is right. Checked against foliate-js 1.0.1.
 
 ## foliate re-anchors to the last visible range, so a re-flow keeps the place
 

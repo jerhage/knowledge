@@ -6,7 +6,7 @@ sidebar:
   order: 2
 ---
 
-My reader recognizes text in a region of a page someone selects. The page is an `ImageBitmap` on the main thread, and the recognition runs in a worker, so the bitmap (or a prepared copy of it) has to be sent to that worker. The general mechanism (transfer vs clone, the transfer list, neutering) is in [Transferable Objects and Structured Clone](/javascript/transferable-objects/). The ownership table for a whole image pipeline is at the end of the [OCR pipeline](/machine-learning/browser-ocr-pipeline/) page.
+Dokseo, my manga and book reader, recognizes text in a region of a page someone selects. The page is an `ImageBitmap` on the main thread, and the recognition runs in a worker, so the bitmap (or a prepared copy of it) has to be sent to that worker. The general mechanism (transfer vs clone, the transfer list, neutering) is in [Transferable Objects and Structured Clone](/javascript/transferable-objects/). The ownership table for a whole image pipeline is at the end of the [OCR pipeline](/machine-learning/browser-ocr-pipeline/) page.
 
 ## An `ImageBitmap` is transferable
 

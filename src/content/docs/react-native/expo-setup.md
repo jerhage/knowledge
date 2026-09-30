@@ -6,7 +6,7 @@ sidebar:
   order: 4
 ---
 
-An Expo app that keeps its data on the device can use expo-sqlite for the database and Drizzle to define the schema and generate migrations. Wiring the two together takes a few pieces of setup that aren't obvious from either library alone. These are the ones I needed. The worked example is [riftcards' SQLite and Drizzle setup](/projects/riftcards/persistence/sqlite-and-drizzle/), and the SQLite facts behind them are on [SQLite](/storage/sqlite/).
+An Expo app that keeps its data on the device can use expo-sqlite for the database and Drizzle to define the schema and generate migrations. Wiring the two together takes a few pieces of setup that aren't obvious from either library alone. These are the ones I needed. The worked example is [the SQLite and Drizzle setup in Rifty, my Riftbound card app](/projects/rifty/persistence/sqlite-and-drizzle/), and the SQLite facts behind them are on [SQLite](/storage/sqlite/).
 
 ## Drizzle's Expo migrations import .sql files, and Babel has to inline them
 
@@ -65,7 +65,7 @@ Nothing is swallowed. The error travels to whatever boundary shows startup failu
 
 iOS and Android each come with a copy of SQLite, but expo-sqlite doesn't use it. It bundles its own SQLite library, built into the app. So a question like "does my SQLite support this?" is answered by the version expo-sqlite ships, not by the phone's OS version.
 
-The version is in the package's vendored header, `node_modules/expo-sqlite/vendor/sqlite3/sqlite3.h`, as `SQLITE_VERSION`. For example, expo-sqlite 57.0.2 (the version riftcards uses) bundles SQLite 3.50.3, and its SQLCipher copy is a separate, older 3.49.1. A feature added after the bundled version isn't there, however new the device is: SQLite 3.53.0's `ALTER TABLE … ALTER COLUMN` for setting or dropping `NOT NULL` isn't available in 3.50.3.
+The version is in the package's vendored header, `node_modules/expo-sqlite/vendor/sqlite3/sqlite3.h`, as `SQLITE_VERSION`. For example, expo-sqlite 57.0.2 (the version Rifty uses) bundles SQLite 3.50.3, and its SQLCipher copy is a separate, older 3.49.1. A feature added after the bundled version isn't there, however new the device is: SQLite 3.53.0's `ALTER TABLE … ALTER COLUMN` for setting or dropping `NOT NULL` isn't available in 3.50.3.
 
 ## Under Jest, replay the same migrations on node:sqlite
 

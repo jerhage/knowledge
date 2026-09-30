@@ -6,7 +6,7 @@ sidebar:
   order: 1
 ---
 
-The rules I hold native UI to, and the reasons for them, are on [accessibility is part of done](/ui-patterns/accessibility-as-done/). This page is the React Native API for each one: the props, what they default to, and where they stop working. How one app uses them, with its audit, is on [accessibility in riftcards](/projects/riftcards/presentation/accessibility/).
+The rules I hold native UI to, and the reasons for them, are on [accessibility is part of done](/ui-patterns/accessibility-as-done/). In React Native, each rule comes down to a few props, what they default to, and where they stop working. How Rifty, my Riftbound card app, uses them, with its audit, is on [accessibility in Rifty](/projects/rifty/presentation/accessibility/).
 
 ## A touchable is accessible by default, so it hides the controls inside it
 

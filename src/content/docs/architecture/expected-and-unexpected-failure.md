@@ -56,7 +56,31 @@ The strength is that the type reads as the operation's full set of outcomes: one
 
 Passing a callee's outcome up is still one line. Say archiving a card first loads it through the card repository's `get`, and `get` has a variant for a store that's unavailable, for example because the browser blocks storage in a private window. A missing card isn't a variant of its own: `get` returns `null` inside its success. `archiveCard` names that absence `notFound`, and returns the unavailable variant unchanged. The repository's `update` answers with the updated card or the same unavailable variant, and since both fit `ArchiveCardResult`, its answer goes out as it is:
 
-My reader uses a generic `Result` (see [a use case in the reader](/projects/reader/architecture/wiring/#a-use-case)). Riftcards uses a named union per use case and bans the generic one (see [use cases, results and failure in riftcards](/projects/riftcards/architecture/use-cases-and-failure/)).
+```ts
+type StorageUnavailable = { readonly kind: "storage-unavailable" };
+
+type CardLookup = { readonly kind: "success"; readonly card: Card | null } | StorageUnavailable;
+type CardUpdate = { readonly kind: "success"; readonly card: Card } | StorageUnavailable;
+
+type ArchiveCardResult =
+  | { readonly kind: "success"; readonly card: Card }
+  | { readonly kind: "notFound"; readonly id: CardId }
+  | StorageUnavailable;
+
+async function archiveCard(deps: ArchiveCardDeps, id: CardId): Promise<ArchiveCardResult> {
+  const found = await deps.cards.get(id); // a CardLookup
+  if (found.kind !== "success") return found;
+  if (found.card === null) return { kind: "notFound", id };
+
+  return deps.cards.update(id, { archivedAt: deps.now() }); // a CardUpdate
+}
+```
+
+After the `if`, TypeScript has narrowed `found` to every variant of `CardLookup` except `success`, and that remainder has to type-check against `ArchiveCardResult`. So if `get` later gains a variant that `ArchiveCardResult` doesn't name, `return found` stops compiling until the union names it or the use case handles it. That's the same guarantee an exhaustive match gives. Narrowing is enough to pass outcomes through, and I write a match only where an outcome gets a new name or a meaning of its own. A variant that several domains return, like `StorageUnavailable`, lives in the kernel, so every union can name it.
+
+Either way, only expected failures go in it. A result type used for everything turns unrecoverable states into ones every call site has code that appears to handle, usually by rethrowing. Throwing everything loses exhaustiveness at the places it helps most. Why a `Result` shouldn't be unwrapped into an exception, and which operations fit a `Result` better than a named union, is on [result types, `unwrap()` and typed outcomes](/architecture/result-types/).
+
+Both of my apps use a named union per use case. Rifty, my Riftbound card app, did from the start and bans the generic one (see [use cases, results and failure in Rifty](/projects/rifty/architecture/use-cases-and-failure/)). Dokseo, my manga and book reader, started on a generic `Result`. Every storage adapter returned a catch-all "storage failed" variant, so it ended up in every domain's error type, and that's what moved it to named unions. The details are on [result types](/architecture/result-types/).
 
 ## An unexpected failure throws to a boundary
 
@@ -236,7 +260,7 @@ An expected condition that can't change while the page is open is still an answe
 
 A rule about what data is allowed needs two enforcement points, not three.
 
-In riftcards, a deck's chosen champion has to be a champion unit. The rule is enforced in two places:
+In Rifty, a deck's chosen champion has to be a champion unit. The rule is enforced in two places:
 
 - **Prevent**, where the choice is offered. The champion picker queries only champion units, so the screen can't offer anything else.
 - **Detect**, in the domain, where data arrives from anywhere. The deck's legality check runs on a deck that was saved before the rule existed, or one imported from a file nobody filtered.
@@ -248,4 +272,4 @@ These tests catch that pattern:
 1. **Is the failure expected?** An expected failure is one a person can cause and the screen must show. If no interaction can produce it, making it a union variant is a category error, and every caller then has code for something that can't happen.
 2. **Does the check have a reachable branch?** If the honest answer needs a comment saying "this can't happen", delete the branch instead of explaining it.
 
-What this doesn't relax: the domain rule stays even when the screen can't break it. A query filters what one screen offers. It says nothing about data the app didn't create. The riftcards version, with the rules themselves, is on [deck legality](/projects/riftcards/decks/legality/).
+What this doesn't relax: the domain rule stays even when the screen can't break it. A query filters what one screen offers. It has no effect on data the app didn't create. The Rifty version, with the rules themselves, is on [deck legality](/projects/rifty/decks/legality/).

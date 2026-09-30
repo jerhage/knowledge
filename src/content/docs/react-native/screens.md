@@ -6,7 +6,7 @@ sidebar:
   order: 3
 ---
 
-react-native-screens is the library that gives React Navigation's native stack (and expo-router's `Stack`, which is built on it) real native screens: a pushed screen, a modal, a sheet. Most of it works without thinking about it. The form sheet has one layout constraint that nothing in an app's own code reveals, and I lost time to it, so it's written down here. The worked example is [the formSheet constraint on riftcards' deck builder](/projects/riftcards/decks/deck-builder/#the-formsheet-constraint).
+react-native-screens is the library that gives React Navigation's native stack (and expo-router's `Stack`, which is built on it) real native screens: a pushed screen, a modal, a sheet. Most of it works without thinking about it. The form sheet has one layout constraint that nothing in an app's own code reveals, and I lost time to it, so it's written down here. The worked example is [the formSheet constraint on the deck builder in Rifty, my Riftbound card app](/projects/rifty/decks/deck-builder/#the-formsheet-constraint).
 
 ## A formSheet supports a scroll view only as the first or second child
 
@@ -17,7 +17,7 @@ For that to work, the library has to find the sheet's scroll view and size it to
 - the scroll view is the first child, and it's sized to fill the sheet;
 - the scroll view is the second child, and the first child is treated as a header: the scroll view is sized to the sheet minus the header's height and placed below it.
 
-Any other position isn't handled. With more than two children, the library logs a warning ("FormSheet with ScrollView expects at most 2 subviews"), and a scroll view past the second position isn't sized to the sheet at all. When riftcards' deck builder had four sibling views with its card list third, the list was hoisted to fill the whole sheet.
+Any other position isn't handled. With more than two children, the library logs a warning ("FormSheet with ScrollView expects at most 2 subviews"), and a scroll view past the second position isn't sized to the sheet at all. When Rifty's deck builder had four sibling views with its card list third, the list was hoisted to fill the whole sheet.
 
 React Navigation's documentation words the requirement more strictly: the `ScrollView` must be reachable by following the first child view at each level of the view hierarchy, starting from the screen component. It calls this a platform requirement. The two readings agree on one layout, the scroll view as the first child, and I use that one where I can.
 

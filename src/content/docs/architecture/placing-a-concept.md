@@ -8,7 +8,7 @@ sidebar:
 
 Every new type, component, port or loader has to go in some domain. Often [the dependency graph](/architecture/domains-and-the-graph/#leaves-and-non-leaves) settles it: only one placement keeps every arrow pointing the right way. Sometimes the graph allows more than one answer, and then I pick with a few rules.
 
-The examples extend the [card catalog](/architecture/overview/#the-running-example) with three more areas. `browsing` is the search screen: a search field, filters, a sort and a grid of cards. `collections` holds a person's saved lists of cards, each card with a count. `stats` measures a list of cards: how many of each kind, how the costs are spread. These rules came out of [riftcards](/projects/riftcards/architecture/ownership-and-placement/), where its modules are called features and the real cases are on that page.
+The examples extend the [card catalog](/architecture/overview/#the-running-example) with three more areas. `browsing` is the search screen: a search field, filters, a sort and a grid of cards. `collections` holds a person's saved lists of cards, each card with a count. `stats` measures a list of cards: how many of each kind, how the costs are spread. These rules came out of [Rifty](/projects/rifty/architecture/ownership-and-placement/), my Riftbound card app, where its modules are called features and the real cases are on that page.
 
 ## Containment is not ownership
 
@@ -45,15 +45,15 @@ Here the collection detail screen shows two `stats` panels, a cost curve and a m
 
 **Option 1: a domain exposes components that render its own types.** `stats` owns `CostCurvePanel`, which takes a `stats` result. The collection screen imports it directly. That's an edge from `collections` to `stats`, in a legal direction. What a domain may not do is borrow another domain's rendering: a card-art component that names card media belongs to `cards`, and if it sits in the shared `components/` and `collections` imports it from there, it's in the wrong place and moves to `cards`.
 
-- What it buys: a screen says what it renders. Reading the collection screen tells you the panels are there.
-- What it costs: domains import each other's UI, so the domain graph gets more edges. It only works if `stats` may be imported by `collections` while `stats` itself imports `cards`, and the [leaf rule](/architecture/domains-and-the-graph/#leaves-and-non-leaves) forbids exactly that. So this option needs a graph that allows any acyclic shape, with the cycles checked on [the domain graph itself](/architecture/domains-and-the-graph/#or-check-cycles-on-the-domain-graph-itself).
-- Used by [riftcards](/projects/riftcards/architecture/ownership-and-placement/#a-feature-may-expose-ui-for-its-own-types): its deck screens import the analysis panels. It considered composing at the route and rejected that as a default.
+- What it buys: a screen's code names what it renders. Reading the collection screen tells you the panels are there.
+- What it costs: domains import each other's UI, so the domain graph gets more edges. It only works if `stats` may be imported by `collections` while `stats` itself imports `cards`, and the [leaf rule](/architecture/domains-and-the-graph/#leaves-and-non-leaves) forbids exactly that. So this option needs a graph that allows any acyclic structure, with the cycles checked on [the domain graph itself](/architecture/domains-and-the-graph/#or-check-cycles-on-the-domain-graph-itself).
+- Used by [Rifty](/projects/rifty/architecture/ownership-and-placement/#a-feature-may-expose-ui-for-its-own-types): its deck screens import the analysis panels. I considered composing at the route there and rejected that as a default.
 
 **Option 2: domains meet only at the route.** No domain imports another domain's `ui/`. The collection screen exposes a slot, and the route fills it with the `stats` panels. How that works is on [two domains meet at the route](/architecture/dependency-injection/#two-domains-meet-at-the-route-not-inside-each-other).
 
 - What it buys: no domain edge at all, so the leaf rule can hold and a domain cycle stays impossible by construction.
-- What it costs: the coupling moves to the route rather than going away, and the screen alone no longer says what it renders. You have to read the route to find the panels.
-- Used by [the reader](/projects/reader/architecture/composing-screens/): both of its readers show the capture panel through a slot the route fills.
+- What it costs: the coupling moves to the route rather than going away, and the screen's code alone no longer names what it renders. You have to read the route to find the panels.
+- Used by [Dokseo](/projects/dokseo/architecture/composing-screens/), my manga and book reader: both of its readers show the capture panel through a slot the route fills.
 
 The choice follows from the graph. Under the leaf layout, option 2 is the only one available. Under an any-DAG layout, option 1 is the default and option 2 is for a dependency that is really optional or substitutable, like the case in the next section.
 
@@ -77,7 +77,7 @@ With it, the subject union can hold each owner's own branded id, so it states ex
 
 The cost is the same as in option 2 above: reading the card view alone doesn't tell you a note control appears there. The side that doesn't depend on the other pays for the slot.
 
-The other layout keeps `annotations` a leaf. It refers to a card by a `CardId` that lives in [the kernel](/architecture/domains-and-the-graph/#the-kernel-knows-no-domain) and never imports `cards`. That keeps every domain edge provably acyclic, and it's the layout the card catalog uses under [the leaf rule](/architecture/domains-and-the-graph/#leaves-and-non-leaves) and the one [the reader](/projects/reader/architecture/domains/) uses. The price is that `annotations` can't resolve its own subjects, so showing a card's title beside a note happens at the route or in a non-leaf, and the id type leaves its owner. [Riftcards](/projects/riftcards/architecture/ownership-and-placement/#naming-and-slotting-annotation) took the naming layout, with the ids staying in the features that own them.
+The other layout keeps `annotations` a leaf. It refers to a card by a `CardId` that lives in [the kernel](/architecture/domains-and-the-graph/#the-kernel-imports-no-domain) and never imports `cards`. That keeps every domain edge provably acyclic, and it's the layout the card catalog uses under [the leaf rule](/architecture/domains-and-the-graph/#leaves-and-non-leaves) and the one [Dokseo](/projects/dokseo/architecture/domains/) uses. The price is that `annotations` can't resolve its own subjects, so showing a card's title beside a note happens at the route or in a non-leaf, and the id type leaves its owner. [Rifty](/projects/rifty/architecture/ownership-and-placement/#naming-and-slotting-annotation) took the naming layout, with the ids staying in the features that own them.
 
 ## Calls may cross an edge; vocabulary may not enter the model
 
@@ -91,7 +91,7 @@ The test is: **can you remove the dependency by deleting a call?** If yes, it's 
 
 The fix moves the edge down one layer. `CollectionEntry` declares its own `card` and `quantity`, and the `CardCount` is built at the call site. The two types then hold the same fields. That repetition is the boundary: two lines of repetition are what stop `collections` inheriting whatever `stats` adds later. Don't-repeat-yourself is right inside a domain and wrong across one.
 
-This holds whichever graph layout you use. A non-leaf that imports a leaf's `domain/` can let the leaf's types into its own model the same way. [Extracting analysis](/projects/riftcards/architecture/extracting-analysis/) is the real case.
+This holds whichever graph layout you use. A non-leaf that imports a leaf's `domain/` can let the leaf's types into its own model the same way. [Extracting analysis](/projects/rifty/architecture/extracting-analysis/) is the real case.
 
 ## A name in the wrong domain comes before the import
 
@@ -99,4 +99,4 @@ Say `stats` started out inside `collections` and was later moved out into its ow
 
 Nothing is broken yet. The trouble comes later: the next person to touch `stats` reads `collectionSize`, reasonably concludes that `stats` depends on collections, and imports the collection type to compute it. The name led them to add the edge back.
 
-So a name that belongs to another domain is the leading indicator of a dependency about to come back, and it shows up before any import does. When a module moves, I rename its vocabulary in the same change: `collectionSize` becomes `poolSize`, because `stats` measures a pool of cards and has no idea where it came from. The renames riftcards made when it extracted analysis are on [extracting analysis](/projects/riftcards/architecture/extracting-analysis/#the-renames).
+So a name that belongs to another domain is the leading indicator of a dependency about to come back, and it shows up before any import does. When a module moves, I rename its vocabulary in the same change: `collectionSize` becomes `poolSize`, because `stats` measures a pool of cards and has no reference to where it came from. The renames I made in Rifty when I extracted analysis are on [extracting analysis](/projects/rifty/architecture/extracting-analysis/#the-renames).

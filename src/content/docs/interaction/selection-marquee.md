@@ -47,7 +47,7 @@ On a canvas page, you have to capture the natural size when the bitmap arrives. 
 
 ## A finished drag must never be reported as a tap, and only a browser test can check it
 
-In my reader, a press on the page can end two ways. A drag selects a region. A tap (a press that barely moves) shows or hides the reader's UI chrome, such as the header. One selection layer decides between the two, and the two outcomes can sit one `return` apart in `pointerup`. A selection below the minimum size on *both* axes, or one that covers no page, calls `tap()` instead of `select()`.
+In Dokseo, my manga and book reader, a press on the page can end two ways. A drag selects a region. A tap (a press that barely moves) shows or hides Dokseo's UI chrome, such as the header. One selection layer handles both, and the two outcomes can sit one `return` apart in `pointerup`. A selection below the minimum size on *both* axes, or one that covers no page, calls `tap()` instead of `select()`.
 
 Because `tap` toggles the UI chrome, any bug in the admission path (the wrong pointer types, a lost anchor, a page whose natural size is still zero) doesn't show up as a missing capture. It shows up as "the header appeared when I finished dragging".
 

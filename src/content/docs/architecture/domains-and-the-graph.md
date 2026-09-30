@@ -47,7 +47,7 @@ Both the file graph and the domain graph have to stay acyclic. Between files, ev
 
 `container.ts` is the composition root and `context.ts` passes it to the UI tree, both on [the dependency injection page](/architecture/dependency-injection/). The rule names in the last column are dependency-cruiser rules from [the config](/architecture/dependency-cruiser-rules/#the-configuration). "Leaf" and "non-leaf" are about the domain graph: a leaf imports no other domain, and a non-leaf may import a leaf but nothing imports it. Details [below](#leaves-and-non-leaves).
 
-The "a domain" row is written for one of two ways to keep the domain graph acyclic, the leaf rule, which the reader uses. Under the other way, [a cycle check on the domain graph](#or-check-cycles-on-the-domain-graph-itself), which riftcards uses, a domain may import another domain as long as no cycle forms between them.
+The "a domain" row is written for one of two ways to keep the domain graph acyclic, the leaf rule, which Dokseo, my manga and book reader, uses. Under the other way, [a cycle check on the domain graph](#or-check-cycles-on-the-domain-graph-itself), which Rifty, my Riftbound card app, uses, a domain may import another domain as long as no cycle forms between them.
 
 ## `components/` is the bottom of the UI
 
@@ -74,7 +74,7 @@ src/domains/cards/
 
 A domain only gets the folders it needs. One that stores nothing has no `adapters/`, and maybe no `use-cases/` either. A domain gets `queries/` when its first read or write goes through the query cache. A big domain can split every folder by the same themes (`domain/note/`, `use-cases/note/`, and so on). The theme split is up to you. The layer split is what gets checked.
 
-Two of these parts have an alternative. `adapters/` can move out of the domain into one top-level `infrastructure/` folder, which is what riftcards does ([both options](/architecture/ports-and-adapters/#adapters-live-inside-their-domain-not-in-a-top-level-infrastructure)). And a use case can return a named union of its outcomes instead of a generic `Result` ([both options](/architecture/dependency-injection/#use-cases-has-one-operation-per-file)).
+Two of these parts have an alternative. `adapters/` can move out of the domain into one top-level `infrastructure/` folder, which is what Rifty does ([both options](/architecture/ports-and-adapters/#adapters-live-inside-their-domain-not-in-a-top-level-infrastructure)). And a use case can return a generic `Result<T, E>` instead of a named union of its own ([both options](/architecture/dependency-injection/#use-cases-has-one-operation-per-file)).
 
 | Part | May import | May not import |
 | --- | --- | --- |
@@ -87,11 +87,32 @@ Two of these parts have an alternative. `adapters/` can move out of the domain i
 - `domain/` declares what the domain needs as ports and never imports what provides them. See [ports and adapters](/architecture/ports-and-adapters/#domain-declares-what-it-needs-and-never-imports-what-provides-it).
 - `use-cases/` has one operation per file, and each one returns its own named union of outcomes. See [dependency injection](/architecture/dependency-injection/#use-cases-has-one-operation-per-file).
 - `adapters/` implements the ports. See [ports and adapters](/architecture/ports-and-adapters/#adapters-implements-the-ports).
-- `ui/` holds screens and their view models. A view model is a class that holds a screen's state, so its logic runs in a unit test without rendering anything. It calls use cases through the container and never calls a port directly. It imports a use case's module only for a type, like its error union. (In Svelte that class holds runes, see [view models](/architecture/sveltekit/#view-models-hold-runes-in-a-sveltets-file).) The other option is a data component: a component that owns one read or one write, calls the use case, and hands its children only the resolved data. Riftcards uses those instead of view models, and [data components](/architecture/data-components/) compares the two.
+- `queries/` holds the domain's query keys and the factories that return query options and mutation options for the query cache. A factory takes the use cases it calls as a parameter. The parameter's type is a structural type declared in the queries module (`CardReads` below), never the composition root's `Container` type, so `queries/` never imports the composition root, and a test passes a plain object. If a factory needs failure text, it writes its own, because it may not import `ui/`:
+
+  ```ts
+  const cardsKeys = {
+    all: () => ['cards'] as const,
+    list: () => [...cardsKeys.all(), 'list'] as const,
+    card: (id: CardId | null) => [...cardsKeys.all(), 'card', id] as const,
+  };
+
+  type CardReads = { readonly readCard: (id: CardId) => Promise<ReadCardResult> };
+
+  function cardQuery(cards: Pick<CardReads, 'readCard'>, id: CardId | null) {
+    return queryOptions({
+      queryKey: cardsKeys.card(id),
+      queryFn: id === null ? skipToken : () => cards.readCard(id),
+      staleTime: 0,
+    });
+  }
+  ```
+
+  While the id is `null`, `skipToken` stands in for the query function, so the cache doesn't run the read. Every key starts with its domain's `all()`, so invalidating `all()` reaches every read in the domain. A mutation factory holds only the `mutationFn`, the function that runs the write.
+- `ui/` holds screens, data components and view models. A data component owns one read: it runs the query, draws the loading and failure states itself, and passes its children only the loaded data. A view model is a class that holds UI state or a write that takes several steps, never a read, and its logic runs in a unit test without rendering anything. Neither one calls a port. `ui/` imports a use case's module only for a type, like its result union. (In Svelte a view model holds runes, see [view models](/architecture/sveltekit/#view-models-hold-runes-in-a-sveltets-file).) [Data components](/architecture/data-components/) explains the split between the two.
 
 ## Leaves and non-leaves
 
-A domain depends on another when any of its files imports a file in the other, and the domain graph has to stay acyclic. There are two ways to make sure it does. This section and the next two describe the first, the leaf rule, which the reader uses: it gives the graph a shape in which a cycle can't form. The second, [a cycle check on the domain graph itself](#or-check-cycles-on-the-domain-graph-itself), lets the graph take any shape and fails when a cycle appears.
+A domain depends on another when any of its files imports a file in the other, and the domain graph has to stay acyclic. This section and the next two describe the leaf rule, which Dokseo uses: it gives the graph a structure in which a cycle can't form. The other way, [a cycle check on the domain graph itself](#or-check-cycles-on-the-domain-graph-itself), lets the graph take any form and fails when a cycle appears.
 
 ```text
                           ┌──────────────┐
@@ -140,7 +161,7 @@ The first rule only fires from a leaf, so on its own it doesn't cover an edge be
 
 ## Or check cycles on the domain graph itself
 
-The leaf rule keeps the domain graph acyclic by forbidding almost every edge between domains. The other way is to allow any edge and look for a cycle in the graph that results. Riftcards works this way.
+The leaf rule keeps the domain graph acyclic by forbidding almost every edge between domains. The other way is to allow any edge and look for a cycle in the graph that results. Rifty works this way.
 
 The check reads every import in the app and puts each file in a zone: one zone per domain, and one per layer outside the domains (the routes, the composition root, the kernel, and so on). A file in `cards` importing a file in `annotations` becomes a zone edge from `cards` to `annotations`. The check then fails if the zone graph has a cycle. The two edges from [the section above](#a-module-cycle-check-doesnt-detect-a-cycle-between-domains), which `no-circular` passed, become `cards → annotations` and `annotations → cards`, and that's a cycle.
 
@@ -156,7 +177,7 @@ What it costs:
 - **Any new edge passes.** An edge that doesn't close a cycle is allowed, whether or not it should exist. The leaf rule forbids most new edges by default. Here a person has to notice them (more in [what path rules don't reach](/architecture/dependency-cruiser-rules/#what-path-rules-dont-reach)).
 - **Layer direction is still separate.** A cycle check doesn't test whether a domain imports something it shouldn't, like an adapter or the composition root, so the direction rules stay.
 
-Riftcards' version is a script it runs as `check:deps`, described on [checking the graph](/projects/riftcards/architecture/checking-the-graph/). Its graph is on [the seven features](/projects/riftcards/architecture/feature-graph/).
+Rifty's version is a script it runs as `check:deps`, described on [checking the graph](/projects/rifty/architecture/checking-the-graph/). Its graph is on [the seven features](/projects/rifty/architecture/feature-graph/).
 
 ## The kernel imports no domain
 
@@ -183,7 +204,7 @@ The read and write adapters over the query library live in the kernel too. A rea
 
 Moving a contract into the kernel keeps both leaves independent. What it costs is that `CardId` is defined away from the domain that owns cards, so a change to how cards are identified touches the kernel as well as `cards`.
 
-**Or the contract stays with its owner.** Under [a cycle check](#or-check-cycles-on-the-domain-graph-itself) instead of the leaf rule, `annotations` may import `cards`, so `CardId` can stay in `cards` and `annotations` imports it from there. Which of the two domains imports the other follows from the product: a note is meaningless without a card, and a card means something without notes, so the domain that would be meaningless without the other is the one that imports it. The edge then says something true, and the id has one home. The cost is that `cards` can never import `annotations`, so anything about notes shown on a card screen has to be handed to `cards` from outside, the way [two domains meet at the screen](#two-domains-meet-at-the-screen-not-inside-each-other) describes. Riftcards works this way: its annotation feature imports the card, rules and deck features for their ids, and nothing else. The kernel still holds what no domain owns, like the text folding above.
+**Or the contract stays with its owner.** Under [a cycle check](#or-check-cycles-on-the-domain-graph-itself) instead of the leaf rule, `annotations` may import `cards`, so `CardId` can stay in `cards` and `annotations` imports it from there. Which of the two domains imports the other follows from the product: a note is meaningless without a card, and a card means something without notes, so the domain that would be meaningless without the other is the one that imports it. The edge then matches a real dependency in the product, and the id has one home. The cost is that `cards` can never import `annotations`, so anything about notes shown on a card screen has to be passed to `cards` from outside, the way [two domains meet at the screen](#two-domains-meet-at-the-screen-not-inside-each-other) describes. Rifty works this way: its annotation feature imports the card, rules and deck features for their ids, and nothing else. The kernel still holds what no domain owns, like the text folding above.
 
 ## Break a cycle by inverting an input, not by moving a file
 
@@ -203,13 +224,13 @@ const curve = costCurve(collection.entries.map(({ card, quantity }) => ({ card, 
 
 Now only `collections → stats` is left, plus `stats → cards` for the `Card` type, which closes no cycle. The same move works for an adapter. Say the media thumbnailer imports the image host from `container.ts`. The composition root imports that adapter, so the two import each other. The fix is for the adapter to take the host as a parameter, `createThumbnailer(imageHost)`, and for the composition root to pass it in. In both repairs a signature changes, and the boundary between the modules stays where it was.
 
-Then rename what's left of the old home. If `stats` still had a total called `collectionSize`, that name would keep a collection's vocabulary inside `stats`, and it's usually how the dependency comes back: someone reads the name and reaches for the type. I rename it for what `stats` actually measures (`poolSize`, a pool of cards it knows nothing else about). [Which domain owns a concept](/architecture/placing-a-concept/) has more on names as the first sign, and [extracting analysis](/projects/riftcards/architecture/extracting-analysis/) is the real case in riftcards.
+Then rename what's left of the old home. If `stats` still had a total called `collectionSize`, that name would keep a collection's vocabulary inside `stats`, and it's usually how the dependency comes back: someone reads the name and reaches for the type. I rename it for what `stats` actually measures (`poolSize`, a pool of cards and nothing more). [Which domain owns a concept](/architecture/placing-a-concept/) has more on names as the first sign, and [extracting analysis](/projects/rifty/architecture/extracting-analysis/) is the real case in Rifty.
 
 ## Two domains meet at the screen, not inside each other
 
-When a screen needs two domains, one option is that no domain imports another domain's `ui/`. The route builds both and connects them, with a slot, a callback, or a need one domain declares and another supplies. The reader works this way, and under the leaf rule it's the only option between two leaves.
+When a screen needs two domains, one option is that no domain imports another domain's `ui/`. The route builds both and connects them, with a slot, a callback, or a need one domain declares and another supplies. Dokseo works this way, and under the leaf rule it's the only option between two leaves.
 
-The other option, which riftcards uses, lets a domain import UI another domain exports for rendering that domain's own types, in the direction the graph already allows. Both, with what each costs, are on [the dependency injection page](/architecture/dependency-injection/#two-domains-meet-at-the-route-not-inside-each-other).
+The other option, which Rifty uses, lets a domain import UI another domain exports for rendering that domain's own types, in the direction the graph already allows. Both, with what each costs, are on [the dependency injection page](/architecture/dependency-injection/#two-domains-meet-at-the-route-not-inside-each-other).
 
 ## Adding a domain
 

@@ -8,7 +8,7 @@ sidebar:
 
 ## An image's size is in its first bytes, and so is its turn
 
-My reader shows the pages of a comic archive in one long scrolling strip. To lay the strip out, it needs each page's width and height, and decoding every image just to learn its size would be slow. It doesn't have to. Every common raster format states its pixel size near the start of the file, so you can get the size without decoding anything. That's what lets me lay out a long strip of images before any of them is decoded (see [Virtualizing a Long Strip of Images](/scrolling/virtualized-image-strips/)). Inside a zip, a stored entry can be sliced to read just these bytes (see [Zip Archives](/files/zip-archives/)). Here's where each format keeps its size:
+Dokseo, my manga and book reader, shows the pages of a comic archive in one long scrolling strip. To lay the strip out, it needs each page's width and height, and decoding every image just to get its size would be slow. It doesn't have to. Every common raster format states its pixel size near the start of the file, so you can get the size without decoding anything. That's what lets me lay out a long strip of images before any of them is decoded (see [Virtualizing a Long Strip of Images](/scrolling/virtualized-image-strips/)). Inside a zip, a stored entry can be sliced to read just these bytes (see [Zip Archives](/files/zip-archives/)). Where each format keeps its size:
 
 - PNG: IHDR is always the first chunk, with width and height big-endian at 16 and 20.
 - GIF: the logical screen, little-endian at 6 and 8.
@@ -23,7 +23,7 @@ Check a header reader against a real browser's `naturalWidth` in a probe (a thro
 
 ## OPFS returns a stored blob with an empty type, and `<img>` sniffs every raster format but never SVG
 
-My reader's library shows a cover for each book. It stores each cover as a file in OPFS with the extension `.cover`, and shows it by pointing an `<img>` at an object URL for the stored file.
+Dokseo's library shows a cover for each book. It stores each cover as a file in OPFS with the extension `.cover`, and shows it by pointing an `<img>` at an object URL for the stored file.
 
 Reading from [OPFS](/storage/origin-private-file-system/) is `FileSystemDirectoryHandle.getFileHandle(name)` then `handle.getFile()`. OPFS stores bytes and a filename. It doesn't store a media type, and the `File` it returns takes its `type` from the *name*. With a non-standard extension like `.cover`, `type` is `''`. I measured that in Chromium.
 

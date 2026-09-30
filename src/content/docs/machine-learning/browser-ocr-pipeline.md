@@ -6,7 +6,7 @@ sidebar:
   order: 1
 ---
 
-My example is a manga OCR reader. It shows manga pages as images, and when I drag a box over a speech bubble, the text in the bubble comes back as one line of text I can select. The model that reads it is manga-ocr, run through transformers.js and ONNX in a worker. Between the drag and the text, a single drag goes through ten stages: the selection is mapped onto the page images, cropped out, prepared for the model, sent to the worker, recognized and cleaned up.
+My example is Dokseo, my manga OCR reader. It shows manga pages as images, and when I drag a box over a speech bubble, the text in the bubble comes back as one line of text I can select. The model that reads it is manga-ocr, run through transformers.js and ONNX in a worker. Between the drag and the text, a single drag goes through ten stages: the selection is mapped onto the page images, cropped out, prepared for the model, sent to the worker, recognized and cleaned up.
 
 Up to the model, the pipeline matches `manga_ocr/ocr.py` in `kha-white/manga-ocr` stage for stage. That repo is the upstream of every manga-ocr model on the Hub, so its code shows how the model's training images were prepared, and a model is most accurate when its input is prepared the same way. Keeping that stage-for-stage match is the thing to protect whenever I change any of this. After the model, my pipeline deliberately does something different: it only removes the whitespace the decoder put in.
 

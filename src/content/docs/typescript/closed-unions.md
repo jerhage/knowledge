@@ -6,7 +6,7 @@ sidebar:
   order: 2
 ---
 
-A closed set is a fixed list of meaningful alternatives: the outcomes of loading a card, the states of a query, whether a deck is legal, the kinds of rule a deck can break. TypeScript can make the compiler know that list and hold every piece of code to it. These are the rules I follow for that. They come from [riftcards](/projects/riftcards/decks/legality/), where every rule on this page has a real case.
+A closed set is a fixed list of meaningful alternatives: the outcomes of loading a card, the states of a query, whether a deck is legal, the kinds of rule a deck can break. TypeScript can encode that list in the types and check every piece of code against it. These are the rules I follow for that. They come from [Rifty](/projects/rifty/decks/legality/), my Riftbound card app, where every one of these rules has a real case.
 
 ## A closed set is a readonly discriminated union
 
@@ -103,7 +103,7 @@ Leave a section out and the declaration doesn't compile (`Property 'sideboard' i
 
 Sometimes a rule applies to only some members of a union. Four of the five deck sections are filled with a count of cards; the legend is a single pick, checked on its own. The tempting move is a subtype: `type CountedSection = Exclude<DeckSection, "legend">`.
 
-That subtype has a problem the name hides. Every function that takes it now refuses the legend, and the legend belongs to no type of its own, so code that handles "the legend" has nowhere to put it. In riftcards the subtype also got a misleading name, which then invited wrong readings of what it selected. It was deleted.
+That subtype has a problem the name hides. No function that takes it accepts the legend, and the legend belongs to no type of its own, so code that handles "the legend" has nowhere to put it. In Rifty the subtype also got a misleading name, which then invited wrong readings of what it selected. It was deleted.
 
 What's actually needed is narrower: one loop skips the legend. So keep one type for the value and derive an ordered list from the total record for the loop:
 

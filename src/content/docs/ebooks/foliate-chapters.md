@@ -6,11 +6,11 @@ sidebar:
   order: 2
 ---
 
-My reader shows EPUB books with foliate-js, a library that lays a book out in pages. foliate-js renders each chapter in its own iframe. What does and doesn't cross that boundary in general is on [same-origin iframes](/html/iframes/).
+Dokseo, my manga and book reader, shows EPUB books with foliate-js, a library that lays a book out in pages. foliate-js renders each chapter in its own iframe. What does and doesn't cross that boundary in general is on [same-origin iframes](/html/iframes/).
 
 ## Theme colors into a foliate chapter iframe
 
-The reader has themes, and each theme defines its colors as CSS custom properties (tokens) on the host page. A chapter's text, links and highlights should use those colors too. But custom properties don't cross into a chapter iframe, so the host has to resolve them to actual colors itself and pass those in. I use probe elements (hidden elements that exist only to be measured) that carry the text, link and highlight color tokens. Their computed `color` already resolves [`light-dark()`](/css/color-scheme/). The probes must have no `transition`, or `getComputedStyle` returns values from the middle of the transition. A plain `<a>` often transitions `color`. (Resolving a token to a color in general is on [tokens where `var()` cannot reach](/css/tokens-at-runtime/).)
+Dokseo has themes, and each theme defines its colors as CSS custom properties (tokens) on the host page. A chapter's text, links and highlights should use those colors too. But custom properties don't cross into a chapter iframe, so the host has to resolve them to actual colors itself and pass those in. I use probe elements (hidden elements that exist only to be measured) styled with the text, link and highlight color tokens. Their computed `color` already resolves [`light-dark()`](/css/color-scheme/). The probes must have no `transition`, or `getComputedStyle` returns values from the middle of the transition. A plain `<a>` often transitions `color`. (Resolving a token to a color in general is on [tokens where `var()` cannot reach](/css/tokens-at-runtime/).)
 
 A pure function turns the readings into an ink object (the set of colors a chapter needs), and a style builder writes that into the chapter CSS. Give the frame the host's *used* `color-scheme`, or Chromium paints an opaque canvas behind the text.
 
@@ -34,11 +34,11 @@ What does *not* work:
 - `dir="rtl"` on a horizontal chapter's root flips `#rtl`, but it also flips the text's direction. If you force the body back to `ltr`, foliate ends up measuring left-to-right columns with its right-to-left formula, and the page count comes out wrong.
 - Taking touches away from foliate with a capture-phase listener and turning pages through `goLeft`/`goRight` makes the page go back and forth on a phone, and leaves foliate's `#locked` turn lock stuck.
 
-Leave swipes to foliate. A horizontal book keeps foliate's per-chapter swipe, turned by each chapter's own `rtl`. My reader shows a first-use touch guide that tells people which way to swipe, so the guide should measure that `rtl` instead of reading the spine.
+Leave swipes to foliate. A horizontal book keeps foliate's per-chapter swipe, turned by each chapter's own `rtl`. Dokseo has a first-use touch guide that shows which way to swipe, so the guide should measure that `rtl` instead of reading the spine.
 
 ## A chapter's computed style can be measured before foliate shows it
 
-To force one writing mode for a vertical book, and to tell the touch guide which way to swipe, the reader has to know a chapter's writing mode and direction before foliate shows anything. The way to get them is to load the chapter yourself, through foliate's own loader. `book.sections[i].load()` goes through foliate's loader. The loader rewrites the chapter's links to blob URLs (style sheets, images) and fires the `data` transform that a sanitizer can hook into (see [sanitizing whole documents with DOMPurify](/security/dompurify/)). `unload()` gives the reference back. The loader counts references per href, so a load and an unload before foliate opens that chapter leave nothing behind, and foliate's own load later starts fresh.
+To force one writing mode for a vertical book, and to give the touch guide the swipe direction, Dokseo has to read a chapter's writing mode and direction before foliate shows anything. The way to get them is to load the chapter yourself, through foliate's own loader. `book.sections[i].load()` goes through foliate's loader. The loader rewrites the chapter's links to blob URLs (style sheets, images) and fires the `data` transform that a sanitizer can hook into (see [sanitizing whole documents with DOMPurify](/security/dompurify/)). `unload()` releases the reference. The loader counts references per href, so a load and an unload before foliate opens that chapter leave nothing behind, and foliate's own load later starts fresh.
 
 Render the returned URL in a sandboxed (`allow-same-origin`, no scripts) iframe that's visually hidden but still laid out (1 px, so every engine computes the style). That gives you `getComputedStyle(body).writingMode`, the same value foliate would read. `section.createDocument()` only parses, with no style sheets. That's enough to check whether a chapter has text, but not how it's laid out. foliate doesn't parse `<meta name="primary-writing-mode">`, but it keeps the raw package document as `book.resources.opf`.
 

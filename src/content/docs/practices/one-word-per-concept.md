@@ -8,7 +8,7 @@ sidebar:
 
 A project picks up words fast. A card becomes a "card" in one file, an "item" in the next and an "entry" on screen, and nobody decided that; each word was reasonable where it was written. The cost shows up later, when someone reads `entry` and has to work out which of three things it holds.
 
-The fix I use is a glossary: a document in the repository that says which word names each concept, and that settles it when two words compete. Domain-driven design calls the shared vocabulary a ubiquitous language; the glossary is where I write mine down. Riftcards, my React Native app, has one, split over four pages starting at [cards, printings and sets](/projects/riftcards/glossary/cards-and-sets/). The examples here use the [card catalog](/architecture/overview/#the-running-example) where they can.
+The fix I use is a glossary: a document in the repository that says which word names each concept, and that settles it when two words compete. Domain-driven design calls the shared vocabulary a ubiquitous language; the glossary is where I write mine down. Rifty, my React Native app for the Riftbound card game, has one, split over four pages starting at [cards, printings and sets](/projects/rifty/glossary/cards-and-sets/). The examples here use the [card catalog](/architecture/overview/#the-running-example) where they can.
 
 ## One word, everywhere the concept appears
 
@@ -32,13 +32,13 @@ The real value does more than illustrate. When the code changes and the value st
 
 Sometimes two words are already in use for one thing, or one word for two things. Then I write a ruling in the glossary: it names the winning word, says why, and lists what changed.
 
-A ruling is binding. Where the code disagrees with it today, the code is what changes, not the ruling. In riftcards, for example, several variables that held a printing id were called `cardId`, which is the name of a different id. The ruling said a variable is named for its type, and all of them were renamed on the same day.
+A ruling is binding. Where the code doesn't match it today, the code is what changes, not the ruling. In Rifty, for example, several variables that held a printing id were called `cardId`, which is the name of a different id. The ruling said a variable is named for its type, and all of them were renamed on the same day.
 
-Sometimes both words win, for different things. "Criteria" and "filters" both stayed in riftcards, because they name two stages: filters are what a person picked on screen, and criteria are what the database query receives. The ruling then records where each one applies, so the pair stays apart.
+Sometimes both words win, for different things. "Criteria" and "filters" both stayed in Rifty, because they name two stages: filters are what a person picked on screen, and criteria are what the database query receives. The ruling then records where each one applies, so the pair stays apart.
 
 ## Banned words, and unsettled ones
 
-Some words lose so often that they get their own list. Each banned word comes with what to say instead and why. A few from riftcards:
+Some words lose so often that they get their own list. Each banned word comes with what to say instead and why. Some from Rifty:
 
 | Banned | Say instead | Why |
 | --- | --- | --- |
@@ -55,7 +55,7 @@ Not every question gets settled right away. When I can't decide, the glossary re
 
 A name can describe what a thing provides, or the mechanism inside it. Take a function that attaches a long-press handler which opens a card and fires a haptic buzz. Called `hapticLongPress`, it names only the mechanism. That invites the wrong question: "can I pass it an intensity?" A name that describes a mechanism suggests the mechanism is what callers configure.
 
-Called `openCardHapticLongPress`, it names where it wires, what it does and that a physical side effect fires. A second long press with a different weight isn't a second argument; it's a second, named function, say `removeCardHapticLongPress`. That keeps the haptics library in one file, makes the set of actions reviewable in one place, and gives the next difference (a longer delay, a confirmation for a destructive action) somewhere to go. The riftcards version is on [React rules I hold in riftcards](/projects/riftcards/presentation/react-conventions/), and the rule for React hooks is on [a hook is named for what it provides](/react/components-and-effects/#a-hook-is-named-for-what-it-provides).
+Called `openCardHapticLongPress`, it names where it wires, what it does and that a physical side effect fires. A second long press with a different weight gets a second, named function instead of an argument, say `removeCardHapticLongPress`. That keeps the haptics library in one file, makes the set of actions reviewable in one place, and gives the next difference (a longer delay, a confirmation for a destructive action) somewhere to go. The Rifty version is on [React rules I hold in Rifty](/projects/rifty/presentation/react-conventions/), and the rule for React hooks is on [a hook is named for what it provides](/react/components-and-effects/#a-hook-is-named-for-what-it-provides).
 
 The same holds for ports: `CardFinder`, `Clock` and `IdGenerator` say what they provide, never the library or store inside them.
 
@@ -63,7 +63,7 @@ The test: could a caller pass something that contradicts the name? If yes, the p
 
 ## A name must match everything it covers
 
-In riftcards, a card's `attributes` are exactly three numbers: energy, might and power. A formatter named `formatCardAttributes` was once changed to also return the card's finish. Nothing broke at compile time. But every caller that read the name and trusted it to return attributes was now wrong, silently. That change is why the riftcards glossary exists.
+In Rifty, a card's `attributes` are exactly three numbers: energy, might and power. A formatter named `formatCardAttributes` was once changed to also return the card's finish. Nothing broke at compile time. But every call site written for a function that returns attributes was now wrong, silently. That change is why the Rifty glossary exists.
 
 A name covers a set of things, and adding one more thing to the set breaks every reader of the name. So a function that returns attributes and something else names both: `formatCardTypeAndAttributes` matches what it returns. If a third thing gets added, the name gains a third thing, or the function is split.
 
@@ -77,7 +77,7 @@ So a variable's name follows its type. In the catalog, a `Card` is `card` wherev
 
 ## A mode is a state, not an action
 
-An editor that can create a new deck or edit an existing one needs a value that says which. In riftcards it was first called `DeckBuildStart`, and the ruling changed it to `DeckBuildMode`.
+An editor that can create a new deck or edit an existing one needs a value that says which. In Rifty it was first called `DeckBuildStart`, and the ruling changed it to `DeckBuildMode`.
 
 The difference is time. A start is an instant: it's true for one moment and then it's over. A mode is what you're in, for as long as you're in it. You're in create mode from the moment you start a new deck until you save it, whichever step of the editor you're on; you haven't created anything yet. The value describes the whole session, so its name should too.
 

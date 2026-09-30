@@ -8,7 +8,7 @@ sidebar:
 
 ## A phantom brand must be invariant, or it has a hole
 
-My reader works with rectangles in more than one coordinate space. Some are measured in an image's own pixels and some on the screen, and at runtime both are the same plain object with four numbers. Passing a screen rect where an image rect belongs gives a wrong answer and no error.
+Dokseo, my manga and book reader, works with rectangles in more than one coordinate space. Some are measured in an image's own pixels and some on the screen, and at runtime both are the same plain object with four numbers. Passing a screen rect where an image rect belongs gives a wrong answer and no error.
 
 A phantom brand is a tag that exists only in the types, so the compiler can distinguish values that look the same at runtime. Here the tag is the rect's space. The obvious way to write one is covariant, meaning a rect branded with a narrower space type also counts as one branded with a wider type:
 
